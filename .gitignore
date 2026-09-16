@@ -201,3 +201,12 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Databricks
+.databricks/
+
+# Datos (nunca al repo)
+data/
+*.csv
+*.zip
+*.parquet

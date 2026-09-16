@@ -1,0 +1,9 @@
+bundle:
+  name: credit-risk-platform
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      host: https://dbc-81f10186-72d8.cloud.databricks.com
