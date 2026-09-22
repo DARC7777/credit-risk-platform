@@ -1,0 +1,14 @@
+project:
+  name: credit-risk-platform
+  seed: 42
+
+catalog:
+  name: riesgo
+  schemas: [bronze, silver, gold, ml, ai]
+
+paths:
+  raw_volume: /Volumes/riesgo/bronze/home_credit_raw
+
+sampling:
+  enabled: true
+  fraction: 0.1
