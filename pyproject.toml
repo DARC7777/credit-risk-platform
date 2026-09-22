@@ -2,10 +2,16 @@
 name = "credit-risk-platform"
 version = "0.0.0"
 requires-python = "==3.12.*"
+dependencies = [
+    "numpy>=2.1.3",
+    "pyyaml>=6.0.3",
+    "scikit-learn>=1.6.1",
+]
 
 [dependency-groups]
 dev = [
     "databricks-connect~=18.0.0",
+    "pytest>=8.3.5",
 ]
 
 [tool.databricks.environment]
@@ -256,3 +262,7 @@ constraint-dependencies = [
     "zstandard~=0.23.0",
 ]
 # end managed by databricks environments setup-local
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

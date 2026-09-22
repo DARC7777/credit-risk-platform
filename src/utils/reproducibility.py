@@ -1,32 +1,37 @@
 # Primera función 
-import pathlib
+from pathlib import Path
+import yaml
+import random
+import numpy as np
 
 
-def load_config(file_path):
+# Raíz del repo: este archivo está en src/utils/, así que sube 2 niveles
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_CONFIG = REPO_ROOT / "conf" / "config.yaml"
+
+
+def load_config(file_path = DEFAULT_CONFIG):
     """
     Load configuration from a YAML file.
 
     Args:
         file_path (str): Path to the YAML configuration file."""  
 
-    pathlib.Path(__file__)
+    with open(file_path, 'r') as f:
+        config = yaml.safe_load(f)
+    return config
 
-def set_seed(seed):
+def set_seeds(seed):
     """
     Set the random seed for reproducibility.
 
     Args:
         seed (int): The seed value to set.
     """
-    import random
-    import numpy as np
-    import sklearn
-    import lightgbm
 
     random.seed(seed)
     np.random.seed(seed)
-    sklearn.utils.random.seed(seed)
-    lightgbm.random_seed(seed)
+
 
 def get_run_fingerprint(spark, tables):
     """
