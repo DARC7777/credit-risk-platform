@@ -1,4 +1,8 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Verificación de entorno (F0)
 # MAGIC Comprueba que catálogo, esquemas y volume existen antes de que corra
@@ -16,7 +20,21 @@ fallas = []
 
 # COMMAND ----------
 
+import sys
+sys.path.append("/Workspace/Repos")  # ajustar según dónde quede el Git folder
+
+from src.utils.reproducibility import load_config, set_seeds
+
+cfg = load_config()
+fallas = []
+
+# COMMAND ----------
+
 # MAGIC %md ## 1. Catálogo
+# MAGIC
+# MAGIC
+
+# COMMAND ----------
 
 catalogo = cfg["catalog"]["name"]
 existe = spark.sql(f"SHOW CATALOGS LIKE '{catalogo}'").count() > 0
@@ -28,6 +46,10 @@ if not existe:
 # COMMAND ----------
 
 # MAGIC %md ## 2. Esquemas
+# MAGIC
+# MAGIC
+
+# COMMAND ----------
 
 esperados = set(cfg["catalog"]["schemas"])
 encontrados = {
@@ -46,10 +68,15 @@ for esquema in sorted(esperados):
 extras = encontrados - esperados - {"default", "information_schema"}
 if extras:
     print(f"WARN | esquemas no declarados: {sorted(extras)}")
+    
 
 # COMMAND ----------
 
 # MAGIC %md ## 3. Volume y archivos
+# MAGIC
+# MAGIC
+
+# COMMAND ----------
 
 ruta = cfg["paths"]["raw_volume"]
 ARCHIVOS_ESPERADOS = 10
@@ -72,6 +99,10 @@ except Exception as e:
 # COMMAND ----------
 
 # MAGIC %md ## 4. Semillas
+# MAGIC
+# MAGIC
+
+# COMMAND ----------
 
 set_seeds(cfg["project"]["seed"])
 print(f"OK   | semilla fijada en {cfg['project']['seed']}")
@@ -79,6 +110,10 @@ print(f"OK   | semilla fijada en {cfg['project']['seed']}")
 # COMMAND ----------
 
 # MAGIC %md ## Resultado
+# MAGIC
+# MAGIC
+
+# COMMAND ----------
 
 if fallas:
     raise RuntimeError("Verificación fallida:\n- " + "\n- ".join(fallas))
