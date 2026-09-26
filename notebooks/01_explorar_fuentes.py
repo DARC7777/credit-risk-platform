@@ -1,6 +1,11 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Exploración de fuentes de datos
+
 # MAGIC Inventario de los CSV antes de escribir los contratos de datos.
 
 # COMMAND ----------
