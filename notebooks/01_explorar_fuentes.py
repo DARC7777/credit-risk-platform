@@ -79,3 +79,17 @@ es_llave("previous_application",  ["SK_ID_PREV"])
 es_llave("pos_cash_balance",      ["SK_ID_PREV", "MONTHS_BALANCE"])
 es_llave("credit_card_balance",   ["SK_ID_PREV", "MONTHS_BALANCE"])
 es_llave("installments_payments", ["SK_ID_PREV", "NUM_INSTALMENT_VERSION", "NUM_INSTALMENT_NUMBER"])
+
+# COMMAND ----------
+
+inst = spark.read.option("header", "true").csv(f"{RUTA}/installments_payments.csv")
+llave = ["SK_ID_PREV", "NUM_INSTALMENT_VERSION", "NUM_INSTALMENT_NUMBER"]
+
+repetidas = inst.groupBy(*llave).count().filter("count > 1")
+print("Combinaciones repetidas:", repetidas.count())
+
+ejemplo = repetidas.limit(1)
+display(inst.join(ejemplo, llave).orderBy("DAYS_ENTRY_PAYMENT"))
+
+es_llave("installments_payments", llave + ["DAYS_ENTRY_PAYMENT"])
+print("Filas idénticas en todas las columnas:", inst.count() - inst.distinct().count())
