@@ -56,3 +56,22 @@ with open("../conf/data_contracts_draft.yaml", "w") as fh:
     yaml.safe_dump(contrato, fh, sort_keys=False, allow_unicode=True)
 
 print("Tablas en el borrador:", list(contrato["tablas"]))
+
+# COMMAND ----------
+
+def es_llave(tabla, columnas):
+    archivo = f"{RUTA}/{contrato['tablas'][tabla]['archivo']}"
+    df = spark.read.option("header", "true").csv(archivo)
+    total = df.count()
+    distintos = df.select(*columnas).distinct().count()
+    print(f"{tabla:25s} {str(columnas):55s} filas={total:>10,}  distintos={distintos:>10,}  {'✓ llave' if total == distintos else '✗ repite'}")
+
+es_llave("bureau", ["SK_ID_BUREAU"])
+es_llave("application_train",     ["SK_ID_CURR"])
+es_llave("application_test",      ["SK_ID_CURR"])
+es_llave("bureau",                ["SK_ID_BUREAU"])
+es_llave("bureau_balance",        ["SK_ID_BUREAU", "MONTHS_BALANCE"])
+es_llave("previous_application",  ["SK_ID_PREV"])
+es_llave("pos_cash_balance",      ["SK_ID_PREV", "MONTHS_BALANCE"])
+es_llave("credit_card_balance",   ["SK_ID_PREV", "MONTHS_BALANCE"])
+es_llave("installments_payments", ["SK_ID_PREV", "NUM_INSTALMENT_VERSION", "NUM_INSTALMENT_NUMBER"])
