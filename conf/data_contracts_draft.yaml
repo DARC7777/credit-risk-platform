@@ -2,17 +2,19 @@ version: 1
 tablas:
   pos_cash_balance:
     archivo: POS_CASH_balance.csv
-    llave: []
+    llave:
+    - SK_ID_PREV
+    - MONTHS_BALANCE
     columnas:
     - nombre: SK_ID_PREV
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: SK_ID_CURR
       tipo: int
       nulable: true
     - nombre: MONTHS_BALANCE
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: CNT_INSTALMENT
       tipo: double
       nulable: true
@@ -30,11 +32,12 @@ tablas:
       nulable: true
   application_test:
     archivo: application_test.csv
-    llave: []
+    llave:
+    - SK_ID_CURR
     columnas:
     - nombre: SK_ID_CURR
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: NAME_CONTRACT_TYPE
       tipo: string
       nulable: true
@@ -81,16 +84,16 @@ tablas:
       tipo: double
       nulable: true
     - nombre: DAYS_BIRTH
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: DAYS_EMPLOYED
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: DAYS_REGISTRATION
       tipo: double
       nulable: true
     - nombre: DAYS_ID_PUBLISH
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: OWN_CAR_AGE
       tipo: double
@@ -397,11 +400,12 @@ tablas:
       nulable: true
   application_train:
     archivo: application_train.csv
-    llave: []
+    llave:
+    - SK_ID_CURR
     columnas:
     - nombre: SK_ID_CURR
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: TARGET
       tipo: int
       nulable: true
@@ -451,16 +455,16 @@ tablas:
       tipo: double
       nulable: true
     - nombre: DAYS_BIRTH
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: DAYS_EMPLOYED
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: DAYS_REGISTRATION
       tipo: double
       nulable: true
     - nombre: DAYS_ID_PUBLISH
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: OWN_CAR_AGE
       tipo: double
@@ -767,14 +771,15 @@ tablas:
       nulable: true
   bureau:
     archivo: bureau.csv
-    llave: []
+    llave:
+    - SK_ID_BUREAU
     columnas:
     - nombre: SK_ID_CURR
       tipo: int
       nulable: true
     - nombre: SK_ID_BUREAU
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: CREDIT_ACTIVE
       tipo: string
       nulable: true
@@ -782,7 +787,7 @@ tablas:
       tipo: string
       nulable: true
     - nombre: DAYS_CREDIT
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: CREDIT_DAY_OVERDUE
       tipo: int
@@ -815,42 +820,46 @@ tablas:
       tipo: string
       nulable: true
     - nombre: DAYS_CREDIT_UPDATE
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: AMT_ANNUITY
       tipo: double
       nulable: true
   bureau_balance:
     archivo: bureau_balance.csv
-    llave: []
+    llave:
+    - SK_ID_BUREAU
+    - MONTHS_BALANCE
     columnas:
     - nombre: SK_ID_BUREAU
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: MONTHS_BALANCE
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: STATUS
       tipo: string
       nulable: true
   credit_card_balance:
     archivo: credit_card_balance.csv
-    llave: []
+    llave:
+    - SK_ID_PREV
+    - MONTHS_BALANCE
     columnas:
     - nombre: SK_ID_PREV
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: SK_ID_CURR
       tipo: int
       nulable: true
     - nombre: MONTHS_BALANCE
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: AMT_BALANCE
       tipo: double
       nulable: true
     - nombre: AMT_CREDIT_LIMIT_ACTUAL
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: AMT_DRAWINGS_ATM_CURRENT
       tipo: double
@@ -908,7 +917,11 @@ tablas:
       nulable: true
   installments_payments:
     archivo: installments_payments.csv
-    llave: []
+    # Sin ID de transacción en la fuente: pagos parciales repiten
+    # crédito+versión+cuota+fecha (770 casos). Sin filas idénticas,
+    # así que se usa un hash de todas las columnas como llave técnica.
+    llave:
+    - _row_hash
     columnas:
     - nombre: SK_ID_PREV
       tipo: int
@@ -936,11 +949,12 @@ tablas:
       nulable: true
   previous_application:
     archivo: previous_application.csv
-    llave: []
+    llave:
+    - SK_ID_PREV
     columnas:
     - nombre: SK_ID_PREV
       tipo: int
-      nulable: true
+      nulable: false
     - nombre: SK_ID_CURR
       tipo: int
       nulable: true
@@ -990,7 +1004,7 @@ tablas:
       tipo: string
       nulable: true
     - nombre: DAYS_DECISION
-      tipo: int
+      tipo: double
       nulable: true
     - nombre: NAME_PAYMENT_TYPE
       tipo: string
