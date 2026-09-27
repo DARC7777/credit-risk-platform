@@ -1,0 +1,1051 @@
+version: 1
+tablas:
+  pos_cash_balance:
+    archivo: POS_CASH_balance.csv
+    llave: []
+    columnas:
+    - nombre: SK_ID_PREV
+      tipo: int
+      nulable: true
+    - nombre: SK_ID_CURR
+      tipo: int
+      nulable: true
+    - nombre: MONTHS_BALANCE
+      tipo: int
+      nulable: true
+    - nombre: CNT_INSTALMENT
+      tipo: double
+      nulable: true
+    - nombre: CNT_INSTALMENT_FUTURE
+      tipo: double
+      nulable: true
+    - nombre: NAME_CONTRACT_STATUS
+      tipo: string
+      nulable: true
+    - nombre: SK_DPD
+      tipo: int
+      nulable: true
+    - nombre: SK_DPD_DEF
+      tipo: int
+      nulable: true
+  application_test:
+    archivo: application_test.csv
+    llave: []
+    columnas:
+    - nombre: SK_ID_CURR
+      tipo: int
+      nulable: true
+    - nombre: NAME_CONTRACT_TYPE
+      tipo: string
+      nulable: true
+    - nombre: CODE_GENDER
+      tipo: string
+      nulable: true
+    - nombre: FLAG_OWN_CAR
+      tipo: string
+      nulable: true
+    - nombre: FLAG_OWN_REALTY
+      tipo: string
+      nulable: true
+    - nombre: CNT_CHILDREN
+      tipo: int
+      nulable: true
+    - nombre: AMT_INCOME_TOTAL
+      tipo: double
+      nulable: true
+    - nombre: AMT_CREDIT
+      tipo: double
+      nulable: true
+    - nombre: AMT_ANNUITY
+      tipo: double
+      nulable: true
+    - nombre: AMT_GOODS_PRICE
+      tipo: double
+      nulable: true
+    - nombre: NAME_TYPE_SUITE
+      tipo: string
+      nulable: true
+    - nombre: NAME_INCOME_TYPE
+      tipo: string
+      nulable: true
+    - nombre: NAME_EDUCATION_TYPE
+      tipo: string
+      nulable: true
+    - nombre: NAME_FAMILY_STATUS
+      tipo: string
+      nulable: true
+    - nombre: NAME_HOUSING_TYPE
+      tipo: string
+      nulable: true
+    - nombre: REGION_POPULATION_RELATIVE
+      tipo: double
+      nulable: true
+    - nombre: DAYS_BIRTH
+      tipo: int
+      nulable: true
+    - nombre: DAYS_EMPLOYED
+      tipo: int
+      nulable: true
+    - nombre: DAYS_REGISTRATION
+      tipo: double
+      nulable: true
+    - nombre: DAYS_ID_PUBLISH
+      tipo: int
+      nulable: true
+    - nombre: OWN_CAR_AGE
+      tipo: double
+      nulable: true
+    - nombre: FLAG_MOBIL
+      tipo: int
+      nulable: true
+    - nombre: FLAG_EMP_PHONE
+      tipo: int
+      nulable: true
+    - nombre: FLAG_WORK_PHONE
+      tipo: int
+      nulable: true
+    - nombre: FLAG_CONT_MOBILE
+      tipo: int
+      nulable: true
+    - nombre: FLAG_PHONE
+      tipo: int
+      nulable: true
+    - nombre: FLAG_EMAIL
+      tipo: int
+      nulable: true
+    - nombre: OCCUPATION_TYPE
+      tipo: string
+      nulable: true
+    - nombre: CNT_FAM_MEMBERS
+      tipo: double
+      nulable: true
+    - nombre: REGION_RATING_CLIENT
+      tipo: int
+      nulable: true
+    - nombre: REGION_RATING_CLIENT_W_CITY
+      tipo: int
+      nulable: true
+    - nombre: WEEKDAY_APPR_PROCESS_START
+      tipo: string
+      nulable: true
+    - nombre: HOUR_APPR_PROCESS_START
+      tipo: int
+      nulable: true
+    - nombre: REG_REGION_NOT_LIVE_REGION
+      tipo: int
+      nulable: true
+    - nombre: REG_REGION_NOT_WORK_REGION
+      tipo: int
+      nulable: true
+    - nombre: LIVE_REGION_NOT_WORK_REGION
+      tipo: int
+      nulable: true
+    - nombre: REG_CITY_NOT_LIVE_CITY
+      tipo: int
+      nulable: true
+    - nombre: REG_CITY_NOT_WORK_CITY
+      tipo: int
+      nulable: true
+    - nombre: LIVE_CITY_NOT_WORK_CITY
+      tipo: int
+      nulable: true
+    - nombre: ORGANIZATION_TYPE
+      tipo: string
+      nulable: true
+    - nombre: EXT_SOURCE_1
+      tipo: double
+      nulable: true
+    - nombre: EXT_SOURCE_2
+      tipo: double
+      nulable: true
+    - nombre: EXT_SOURCE_3
+      tipo: double
+      nulable: true
+    - nombre: APARTMENTS_AVG
+      tipo: double
+      nulable: true
+    - nombre: BASEMENTAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BEGINEXPLUATATION_AVG
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BUILD_AVG
+      tipo: double
+      nulable: true
+    - nombre: COMMONAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: ELEVATORS_AVG
+      tipo: double
+      nulable: true
+    - nombre: ENTRANCES_AVG
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMAX_AVG
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMIN_AVG
+      tipo: double
+      nulable: true
+    - nombre: LANDAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAPARTMENTS_AVG
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAPARTMENTS_AVG
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: APARTMENTS_MODE
+      tipo: double
+      nulable: true
+    - nombre: BASEMENTAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BEGINEXPLUATATION_MODE
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BUILD_MODE
+      tipo: double
+      nulable: true
+    - nombre: COMMONAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: ELEVATORS_MODE
+      tipo: double
+      nulable: true
+    - nombre: ENTRANCES_MODE
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMAX_MODE
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMIN_MODE
+      tipo: double
+      nulable: true
+    - nombre: LANDAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAPARTMENTS_MODE
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAPARTMENTS_MODE
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: APARTMENTS_MEDI
+      tipo: double
+      nulable: true
+    - nombre: BASEMENTAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BEGINEXPLUATATION_MEDI
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BUILD_MEDI
+      tipo: double
+      nulable: true
+    - nombre: COMMONAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: ELEVATORS_MEDI
+      tipo: double
+      nulable: true
+    - nombre: ENTRANCES_MEDI
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMAX_MEDI
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMIN_MEDI
+      tipo: double
+      nulable: true
+    - nombre: LANDAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAPARTMENTS_MEDI
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAPARTMENTS_MEDI
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: FONDKAPREMONT_MODE
+      tipo: string
+      nulable: true
+    - nombre: HOUSETYPE_MODE
+      tipo: string
+      nulable: true
+    - nombre: TOTALAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: WALLSMATERIAL_MODE
+      tipo: string
+      nulable: true
+    - nombre: EMERGENCYSTATE_MODE
+      tipo: string
+      nulable: true
+    - nombre: OBS_30_CNT_SOCIAL_CIRCLE
+      tipo: double
+      nulable: true
+    - nombre: DEF_30_CNT_SOCIAL_CIRCLE
+      tipo: double
+      nulable: true
+    - nombre: OBS_60_CNT_SOCIAL_CIRCLE
+      tipo: double
+      nulable: true
+    - nombre: DEF_60_CNT_SOCIAL_CIRCLE
+      tipo: double
+      nulable: true
+    - nombre: DAYS_LAST_PHONE_CHANGE
+      tipo: double
+      nulable: true
+    - nombre: FLAG_DOCUMENT_2
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_3
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_4
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_5
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_6
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_7
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_8
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_9
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_10
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_11
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_12
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_13
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_14
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_15
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_16
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_17
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_18
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_19
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_20
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_21
+      tipo: int
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_HOUR
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_DAY
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_WEEK
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_MON
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_QRT
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_YEAR
+      tipo: double
+      nulable: true
+  application_train:
+    archivo: application_train.csv
+    llave: []
+    columnas:
+    - nombre: SK_ID_CURR
+      tipo: int
+      nulable: true
+    - nombre: TARGET
+      tipo: int
+      nulable: true
+    - nombre: NAME_CONTRACT_TYPE
+      tipo: string
+      nulable: true
+    - nombre: CODE_GENDER
+      tipo: string
+      nulable: true
+    - nombre: FLAG_OWN_CAR
+      tipo: string
+      nulable: true
+    - nombre: FLAG_OWN_REALTY
+      tipo: string
+      nulable: true
+    - nombre: CNT_CHILDREN
+      tipo: int
+      nulable: true
+    - nombre: AMT_INCOME_TOTAL
+      tipo: double
+      nulable: true
+    - nombre: AMT_CREDIT
+      tipo: double
+      nulable: true
+    - nombre: AMT_ANNUITY
+      tipo: double
+      nulable: true
+    - nombre: AMT_GOODS_PRICE
+      tipo: double
+      nulable: true
+    - nombre: NAME_TYPE_SUITE
+      tipo: string
+      nulable: true
+    - nombre: NAME_INCOME_TYPE
+      tipo: string
+      nulable: true
+    - nombre: NAME_EDUCATION_TYPE
+      tipo: string
+      nulable: true
+    - nombre: NAME_FAMILY_STATUS
+      tipo: string
+      nulable: true
+    - nombre: NAME_HOUSING_TYPE
+      tipo: string
+      nulable: true
+    - nombre: REGION_POPULATION_RELATIVE
+      tipo: double
+      nulable: true
+    - nombre: DAYS_BIRTH
+      tipo: int
+      nulable: true
+    - nombre: DAYS_EMPLOYED
+      tipo: int
+      nulable: true
+    - nombre: DAYS_REGISTRATION
+      tipo: double
+      nulable: true
+    - nombre: DAYS_ID_PUBLISH
+      tipo: int
+      nulable: true
+    - nombre: OWN_CAR_AGE
+      tipo: double
+      nulable: true
+    - nombre: FLAG_MOBIL
+      tipo: int
+      nulable: true
+    - nombre: FLAG_EMP_PHONE
+      tipo: int
+      nulable: true
+    - nombre: FLAG_WORK_PHONE
+      tipo: int
+      nulable: true
+    - nombre: FLAG_CONT_MOBILE
+      tipo: int
+      nulable: true
+    - nombre: FLAG_PHONE
+      tipo: int
+      nulable: true
+    - nombre: FLAG_EMAIL
+      tipo: int
+      nulable: true
+    - nombre: OCCUPATION_TYPE
+      tipo: string
+      nulable: true
+    - nombre: CNT_FAM_MEMBERS
+      tipo: double
+      nulable: true
+    - nombre: REGION_RATING_CLIENT
+      tipo: int
+      nulable: true
+    - nombre: REGION_RATING_CLIENT_W_CITY
+      tipo: int
+      nulable: true
+    - nombre: WEEKDAY_APPR_PROCESS_START
+      tipo: string
+      nulable: true
+    - nombre: HOUR_APPR_PROCESS_START
+      tipo: int
+      nulable: true
+    - nombre: REG_REGION_NOT_LIVE_REGION
+      tipo: int
+      nulable: true
+    - nombre: REG_REGION_NOT_WORK_REGION
+      tipo: int
+      nulable: true
+    - nombre: LIVE_REGION_NOT_WORK_REGION
+      tipo: int
+      nulable: true
+    - nombre: REG_CITY_NOT_LIVE_CITY
+      tipo: int
+      nulable: true
+    - nombre: REG_CITY_NOT_WORK_CITY
+      tipo: int
+      nulable: true
+    - nombre: LIVE_CITY_NOT_WORK_CITY
+      tipo: int
+      nulable: true
+    - nombre: ORGANIZATION_TYPE
+      tipo: string
+      nulable: true
+    - nombre: EXT_SOURCE_1
+      tipo: double
+      nulable: true
+    - nombre: EXT_SOURCE_2
+      tipo: double
+      nulable: true
+    - nombre: EXT_SOURCE_3
+      tipo: double
+      nulable: true
+    - nombre: APARTMENTS_AVG
+      tipo: double
+      nulable: true
+    - nombre: BASEMENTAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BEGINEXPLUATATION_AVG
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BUILD_AVG
+      tipo: double
+      nulable: true
+    - nombre: COMMONAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: ELEVATORS_AVG
+      tipo: double
+      nulable: true
+    - nombre: ENTRANCES_AVG
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMAX_AVG
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMIN_AVG
+      tipo: double
+      nulable: true
+    - nombre: LANDAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAPARTMENTS_AVG
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAPARTMENTS_AVG
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAREA_AVG
+      tipo: double
+      nulable: true
+    - nombre: APARTMENTS_MODE
+      tipo: double
+      nulable: true
+    - nombre: BASEMENTAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BEGINEXPLUATATION_MODE
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BUILD_MODE
+      tipo: double
+      nulable: true
+    - nombre: COMMONAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: ELEVATORS_MODE
+      tipo: double
+      nulable: true
+    - nombre: ENTRANCES_MODE
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMAX_MODE
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMIN_MODE
+      tipo: double
+      nulable: true
+    - nombre: LANDAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAPARTMENTS_MODE
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAPARTMENTS_MODE
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: APARTMENTS_MEDI
+      tipo: double
+      nulable: true
+    - nombre: BASEMENTAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BEGINEXPLUATATION_MEDI
+      tipo: double
+      nulable: true
+    - nombre: YEARS_BUILD_MEDI
+      tipo: double
+      nulable: true
+    - nombre: COMMONAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: ELEVATORS_MEDI
+      tipo: double
+      nulable: true
+    - nombre: ENTRANCES_MEDI
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMAX_MEDI
+      tipo: double
+      nulable: true
+    - nombre: FLOORSMIN_MEDI
+      tipo: double
+      nulable: true
+    - nombre: LANDAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAPARTMENTS_MEDI
+      tipo: double
+      nulable: true
+    - nombre: LIVINGAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAPARTMENTS_MEDI
+      tipo: double
+      nulable: true
+    - nombre: NONLIVINGAREA_MEDI
+      tipo: double
+      nulable: true
+    - nombre: FONDKAPREMONT_MODE
+      tipo: string
+      nulable: true
+    - nombre: HOUSETYPE_MODE
+      tipo: string
+      nulable: true
+    - nombre: TOTALAREA_MODE
+      tipo: double
+      nulable: true
+    - nombre: WALLSMATERIAL_MODE
+      tipo: string
+      nulable: true
+    - nombre: EMERGENCYSTATE_MODE
+      tipo: string
+      nulable: true
+    - nombre: OBS_30_CNT_SOCIAL_CIRCLE
+      tipo: double
+      nulable: true
+    - nombre: DEF_30_CNT_SOCIAL_CIRCLE
+      tipo: double
+      nulable: true
+    - nombre: OBS_60_CNT_SOCIAL_CIRCLE
+      tipo: double
+      nulable: true
+    - nombre: DEF_60_CNT_SOCIAL_CIRCLE
+      tipo: double
+      nulable: true
+    - nombre: DAYS_LAST_PHONE_CHANGE
+      tipo: double
+      nulable: true
+    - nombre: FLAG_DOCUMENT_2
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_3
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_4
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_5
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_6
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_7
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_8
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_9
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_10
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_11
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_12
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_13
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_14
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_15
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_16
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_17
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_18
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_19
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_20
+      tipo: int
+      nulable: true
+    - nombre: FLAG_DOCUMENT_21
+      tipo: int
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_HOUR
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_DAY
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_WEEK
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_MON
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_QRT
+      tipo: double
+      nulable: true
+    - nombre: AMT_REQ_CREDIT_BUREAU_YEAR
+      tipo: double
+      nulable: true
+  bureau:
+    archivo: bureau.csv
+    llave: []
+    columnas:
+    - nombre: SK_ID_CURR
+      tipo: int
+      nulable: true
+    - nombre: SK_ID_BUREAU
+      tipo: int
+      nulable: true
+    - nombre: CREDIT_ACTIVE
+      tipo: string
+      nulable: true
+    - nombre: CREDIT_CURRENCY
+      tipo: string
+      nulable: true
+    - nombre: DAYS_CREDIT
+      tipo: int
+      nulable: true
+    - nombre: CREDIT_DAY_OVERDUE
+      tipo: int
+      nulable: true
+    - nombre: DAYS_CREDIT_ENDDATE
+      tipo: double
+      nulable: true
+    - nombre: DAYS_ENDDATE_FACT
+      tipo: double
+      nulable: true
+    - nombre: AMT_CREDIT_MAX_OVERDUE
+      tipo: double
+      nulable: true
+    - nombre: CNT_CREDIT_PROLONG
+      tipo: int
+      nulable: true
+    - nombre: AMT_CREDIT_SUM
+      tipo: double
+      nulable: true
+    - nombre: AMT_CREDIT_SUM_DEBT
+      tipo: double
+      nulable: true
+    - nombre: AMT_CREDIT_SUM_LIMIT
+      tipo: double
+      nulable: true
+    - nombre: AMT_CREDIT_SUM_OVERDUE
+      tipo: double
+      nulable: true
+    - nombre: CREDIT_TYPE
+      tipo: string
+      nulable: true
+    - nombre: DAYS_CREDIT_UPDATE
+      tipo: int
+      nulable: true
+    - nombre: AMT_ANNUITY
+      tipo: double
+      nulable: true
+  bureau_balance:
+    archivo: bureau_balance.csv
+    llave: []
+    columnas:
+    - nombre: SK_ID_BUREAU
+      tipo: int
+      nulable: true
+    - nombre: MONTHS_BALANCE
+      tipo: int
+      nulable: true
+    - nombre: STATUS
+      tipo: string
+      nulable: true
+  credit_card_balance:
+    archivo: credit_card_balance.csv
+    llave: []
+    columnas:
+    - nombre: SK_ID_PREV
+      tipo: int
+      nulable: true
+    - nombre: SK_ID_CURR
+      tipo: int
+      nulable: true
+    - nombre: MONTHS_BALANCE
+      tipo: int
+      nulable: true
+    - nombre: AMT_BALANCE
+      tipo: double
+      nulable: true
+    - nombre: AMT_CREDIT_LIMIT_ACTUAL
+      tipo: int
+      nulable: true
+    - nombre: AMT_DRAWINGS_ATM_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_DRAWINGS_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_DRAWINGS_OTHER_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_DRAWINGS_POS_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_INST_MIN_REGULARITY
+      tipo: double
+      nulable: true
+    - nombre: AMT_PAYMENT_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_PAYMENT_TOTAL_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_RECEIVABLE_PRINCIPAL
+      tipo: double
+      nulable: true
+    - nombre: AMT_RECIVABLE
+      tipo: double
+      nulable: true
+    - nombre: AMT_TOTAL_RECEIVABLE
+      tipo: double
+      nulable: true
+    - nombre: CNT_DRAWINGS_ATM_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: CNT_DRAWINGS_CURRENT
+      tipo: int
+      nulable: true
+    - nombre: CNT_DRAWINGS_OTHER_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: CNT_DRAWINGS_POS_CURRENT
+      tipo: double
+      nulable: true
+    - nombre: CNT_INSTALMENT_MATURE_CUM
+      tipo: double
+      nulable: true
+    - nombre: NAME_CONTRACT_STATUS
+      tipo: string
+      nulable: true
+    - nombre: SK_DPD
+      tipo: int
+      nulable: true
+    - nombre: SK_DPD_DEF
+      tipo: int
+      nulable: true
+  installments_payments:
+    archivo: installments_payments.csv
+    llave: []
+    columnas:
+    - nombre: SK_ID_PREV
+      tipo: int
+      nulable: true
+    - nombre: SK_ID_CURR
+      tipo: int
+      nulable: true
+    - nombre: NUM_INSTALMENT_VERSION
+      tipo: double
+      nulable: true
+    - nombre: NUM_INSTALMENT_NUMBER
+      tipo: int
+      nulable: true
+    - nombre: DAYS_INSTALMENT
+      tipo: double
+      nulable: true
+    - nombre: DAYS_ENTRY_PAYMENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_INSTALMENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_PAYMENT
+      tipo: double
+      nulable: true
+  previous_application:
+    archivo: previous_application.csv
+    llave: []
+    columnas:
+    - nombre: SK_ID_PREV
+      tipo: int
+      nulable: true
+    - nombre: SK_ID_CURR
+      tipo: int
+      nulable: true
+    - nombre: NAME_CONTRACT_TYPE
+      tipo: string
+      nulable: true
+    - nombre: AMT_ANNUITY
+      tipo: double
+      nulable: true
+    - nombre: AMT_APPLICATION
+      tipo: double
+      nulable: true
+    - nombre: AMT_CREDIT
+      tipo: double
+      nulable: true
+    - nombre: AMT_DOWN_PAYMENT
+      tipo: double
+      nulable: true
+    - nombre: AMT_GOODS_PRICE
+      tipo: double
+      nulable: true
+    - nombre: WEEKDAY_APPR_PROCESS_START
+      tipo: string
+      nulable: true
+    - nombre: HOUR_APPR_PROCESS_START
+      tipo: int
+      nulable: true
+    - nombre: FLAG_LAST_APPL_PER_CONTRACT
+      tipo: string
+      nulable: true
+    - nombre: NFLAG_LAST_APPL_IN_DAY
+      tipo: int
+      nulable: true
+    - nombre: RATE_DOWN_PAYMENT
+      tipo: double
+      nulable: true
+    - nombre: RATE_INTEREST_PRIMARY
+      tipo: double
+      nulable: true
+    - nombre: RATE_INTEREST_PRIVILEGED
+      tipo: double
+      nulable: true
+    - nombre: NAME_CASH_LOAN_PURPOSE
+      tipo: string
+      nulable: true
+    - nombre: NAME_CONTRACT_STATUS
+      tipo: string
+      nulable: true
+    - nombre: DAYS_DECISION
+      tipo: int
+      nulable: true
+    - nombre: NAME_PAYMENT_TYPE
+      tipo: string
+      nulable: true
+    - nombre: CODE_REJECT_REASON
+      tipo: string
+      nulable: true
+    - nombre: NAME_TYPE_SUITE
+      tipo: string
+      nulable: true
+    - nombre: NAME_CLIENT_TYPE
+      tipo: string
+      nulable: true
+    - nombre: NAME_GOODS_CATEGORY
+      tipo: string
+      nulable: true
+    - nombre: NAME_PORTFOLIO
+      tipo: string
+      nulable: true
+    - nombre: NAME_PRODUCT_TYPE
+      tipo: string
+      nulable: true
+    - nombre: CHANNEL_TYPE
+      tipo: string
+      nulable: true
+    - nombre: SELLERPLACE_AREA
+      tipo: int
+      nulable: true
+    - nombre: NAME_SELLER_INDUSTRY
+      tipo: string
+      nulable: true
+    - nombre: CNT_PAYMENT
+      tipo: double
+      nulable: true
+    - nombre: NAME_YIELD_GROUP
+      tipo: string
+      nulable: true
+    - nombre: PRODUCT_COMBINATION
+      tipo: string
+      nulable: true
+    - nombre: DAYS_FIRST_DRAWING
+      tipo: double
+      nulable: true
+    - nombre: DAYS_FIRST_DUE
+      tipo: double
+      nulable: true
+    - nombre: DAYS_LAST_DUE_1ST_VERSION
+      tipo: double
+      nulable: true
+    - nombre: DAYS_LAST_DUE
+      tipo: double
+      nulable: true
+    - nombre: DAYS_TERMINATION
+      tipo: double
+      nulable: true
+    - nombre: NFLAG_INSURED_ON_APPROVAL
+      tipo: double
+      nulable: true
