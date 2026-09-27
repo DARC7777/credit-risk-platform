@@ -5,7 +5,7 @@
 # ///
 # MAGIC %md
 # MAGIC # Exploración de fuentes de datos
-
+# MAGIC
 # MAGIC Inventario de los CSV antes de escribir los contratos de datos.
 
 # COMMAND ----------
@@ -71,7 +71,6 @@ def es_llave(tabla, columnas):
     distintos = df.select(*columnas).distinct().count()
     print(f"{tabla:25s} {str(columnas):55s} filas={total:>10,}  distintos={distintos:>10,}  {'✓ llave' if total == distintos else '✗ repite'}")
 
-es_llave("bureau", ["SK_ID_BUREAU"])
 es_llave("application_train",     ["SK_ID_CURR"])
 es_llave("application_test",      ["SK_ID_CURR"])
 es_llave("bureau",                ["SK_ID_BUREAU"])
