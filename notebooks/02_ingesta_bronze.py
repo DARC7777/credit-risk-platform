@@ -81,14 +81,19 @@ for nombre, pdf in casos.items():
 
 from src.ingestion.writers import escribir_bronze
 
-tabla = "bureau"
-info = contrato["tablas"][tabla]
-ruta = f"{RUTA}/{info['archivo']}"
-destino = f"riesgo.bronze.{tabla}"
-
 for intento in [1, 2]:
-    validar_estructura(spark, ruta, contrato, tabla)
-    df = leer_csv(spark, ruta, esquema_de(contrato, tabla))
-    df = agregar_metadatos(df, info["archivo"], batch_id=str(uuid.uuid4()))
-    modo = escribir_bronze(spark, df, destino, info["llave"])
-    print(f"Intento {intento}: {modo} → {spark.table(destino).count():,} filas")
+    print(f"--- Carga {intento} ---")
+    for tabla, info in contrato["tablas"].items():
+        ruta = f"{RUTA}/{info['archivo']}"
+        destino = f"riesgo.bronze.{tabla}"
+
+        validar_estructura(spark, ruta, contrato, tabla)
+        df = leer_csv(spark, ruta, esquema_de(contrato, tabla))
+
+        if info["llave"] == ["_row_hash"]:
+            columnas = [c["nombre"] for c in info["columnas"]]
+            df = agregar_row_hash(df, columnas)
+
+        df = agregar_metadatos(df, info["archivo"], batch_id=str(uuid.uuid4()))
+        modo = escribir_bronze(spark, df, destino, info["llave"])
+        print(f"{tabla:25s} {modo:8s} {spark.table(destino).count():>12,} filas")
