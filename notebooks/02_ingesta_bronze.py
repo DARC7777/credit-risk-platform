@@ -76,3 +76,19 @@ for nombre, pdf in casos.items():
         print(f"✗ {nombre}: NO se detectó")
     except ContratoRoto as e:
         print(f"✓ {nombre}: detectado → {e}")
+
+# COMMAND ----------
+
+from src.ingestion.writers import escribir_bronze
+
+tabla = "bureau"
+info = contrato["tablas"][tabla]
+ruta = f"{RUTA}/{info['archivo']}"
+destino = f"riesgo.bronze.{tabla}"
+
+for intento in [1, 2]:
+    validar_estructura(spark, ruta, contrato, tabla)
+    df = leer_csv(spark, ruta, esquema_de(contrato, tabla))
+    df = agregar_metadatos(df, info["archivo"], batch_id=str(uuid.uuid4()))
+    modo = escribir_bronze(spark, df, destino, info["llave"])
+    print(f"Intento {intento}: {modo} → {spark.table(destino).count():,} filas")
