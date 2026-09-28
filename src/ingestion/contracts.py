@@ -21,3 +21,20 @@ def esquema_de(contrato, tabla):
         StructField(c["nombre"], TIPOS[c["tipo"]], c["nulable"])
         for c in columnas
     ])
+
+class ContratoRoto(Exception):
+    pass
+
+
+def validar_estructura(spark, ruta, contrato, tabla):
+    esperadas = [c["nombre"] for c in contrato["tablas"][tabla]["columnas"]]
+    recibidas = spark.read.option("header", "true").csv(ruta).columns
+
+    faltan = [c for c in esperadas if c not in recibidas]
+    sobran = [c for c in recibidas if c not in esperadas]
+    orden_ok = recibidas == esperadas
+
+    if faltan or sobran or not orden_ok:
+        raise ContratoRoto(
+            f"{tabla}: faltan={faltan} sobran={sobran} orden_correcto={orden_ok}"
+        )

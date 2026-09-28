@@ -43,3 +43,11 @@ total = df.count()
 hashes = df.select("_row_hash").distinct().count()
 print(f"Filas: {total:,}  Hashes distintos: {hashes:,}  {'✓ llave' if total == hashes else '✗ repite'}")
 display(df.limit(3))
+
+# COMMAND ----------
+
+from src.ingestion.contracts import validar_estructura
+
+for tabla, info in contrato["tablas"].items():
+    validar_estructura(spark, f"{RUTA}/{info['archivo']}", contrato, tabla)
+    print(f"✓ {tabla}")
