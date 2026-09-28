@@ -13,3 +13,15 @@ esquema = esquema_de(contrato, "bureau")
 for campo in esquema.fields:
     print(f"{campo.name:25s} {campo.dataType.simpleString():8s} nulable={campo.nullable}")
 # COMMAND ----------
+# COMMAND ----------
+
+from src.ingestion.readers import leer_csv
+
+RUTA = "/Volumes/riesgo/bronze/home_credit_raw"
+archivo = contrato["tablas"]["bureau"]["archivo"]
+
+df = leer_csv(spark, f"{RUTA}/{archivo}", esquema)
+
+print("Filas:", df.count())
+print("Filas con datos rescatados:", df.filter("_rescued_data IS NOT NULL").count())
+display(df.limit(5))
