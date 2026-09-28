@@ -51,3 +51,28 @@ from src.ingestion.contracts import validar_estructura
 for tabla, info in contrato["tablas"].items():
     validar_estructura(spark, f"{RUTA}/{info['archivo']}", contrato, tabla)
     print(f"✓ {tabla}")
+
+# COMMAND ----------
+
+from src.ingestion.contracts import ContratoRoto
+
+PRUEBAS = f"{RUTA}/_pruebas"
+dbutils.fs.mkdirs(PRUEBAS)
+
+base = spark.read.option("header", "true").csv(f"{RUTA}/bureau.csv").limit(100).toPandas()
+cols = list(base.columns)
+
+casos = {
+    "falta_columna":  base.drop(columns=["AMT_CREDIT_SUM"]),
+    "sobra_columna":  base.assign(COLUMNA_NUEVA="x"),
+    "orden_cambiado": base[[cols[1], cols[0]] + cols[2:]],
+}
+
+for nombre, pdf in casos.items():
+    ruta = f"{PRUEBAS}/bureau_{nombre}.csv"
+    pdf.to_csv(ruta, index=False)
+    try:
+        validar_estructura(spark, ruta, contrato, "bureau")
+        print(f"✗ {nombre}: NO se detectó")
+    except ContratoRoto as e:
+        print(f"✓ {nombre}: detectado → {e}")
