@@ -3,6 +3,23 @@
 # MAGIC # Ingesta a Bronze
 # MAGIC Lectura de los CSV con el esquema declarado en el contrato.
 
+
+# COMMAND ----------
+
+%load_ext autoreload
+%autoreload 2
+
+# COMMAND ----------
+
+import uuid
+from src.ingestion.contracts import cargar_contrato, esquema_de, validar_estructura, ContratoRoto
+from src.ingestion.readers import leer_csv
+from src.ingestion.metadata import agregar_metadatos, agregar_row_hash
+from src.ingestion.writers import escribir_bronze
+
+RUTA = "/Volumes/riesgo/bronze/home_credit_raw"
+contrato = cargar_contrato("../conf/data_contracts.yaml")
+
 # COMMAND ----------
 
 from src.ingestion.contracts import cargar_contrato, esquema_de
@@ -97,3 +114,36 @@ for intento in [1, 2]:
         df = agregar_metadatos(df, info["archivo"], batch_id=str(uuid.uuid4()))
         modo = escribir_bronze(spark, df, destino, info["llave"])
         print(f"{tabla:25s} {modo:8s} {spark.table(destino).count():>12,} filas")
+
+# COMMAND ----------
+
+for tabla, info in contrato["tablas"].items():
+    bronze = spark.table(f"riesgo.bronze.{tabla}")
+    csv = spark.read.option("header", "true").csv(f"{RUTA}/{info['archivo']}")
+
+    filas_csv = csv.count()
+    filas_bronze = bronze.count()
+    llaves = bronze.select(*info["llave"]).distinct().count()
+    lotes = bronze.select("_batch_id").distinct().count()
+
+    ok = filas_csv == filas_bronze == llaves and lotes == 1
+    print(f"{tabla:25s} csv={filas_csv:>11,} bronze={filas_bronze:>11,} "
+          f"llaves={llaves:>11,} lotes={lotes}  {'✓' if ok else '✗'}")
+
+# COMMAND ----------
+
+tabla = "bureau"
+info = contrato["tablas"][tabla]
+prueba = "riesgo.bronze._prueba_append"
+
+spark.sql(f"DROP TABLE IF EXISTS {prueba}")
+for intento in [1, 2]:
+    df = leer_csv(spark, f"{RUTA}/{info['archivo']}", esquema_de(contrato, tabla))
+    df = agregar_metadatos(df, info["archivo"], batch_id=str(uuid.uuid4()))
+    df.write.format("delta").mode("append").saveAsTable(prueba)
+
+t = spark.table(prueba)
+print(f"filas={t.count():,}  llaves={t.select(*info['llave']).distinct().count():,}  "
+      f"lotes={t.select('_batch_id').distinct().count()}")
+
+spark.sql(f"DROP TABLE {prueba}")
