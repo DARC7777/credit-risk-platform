@@ -26,6 +26,7 @@ opciones_pg = {
     "database": "databricks_postgres",
     "user": "daki.dev27@gmail.com",
     "password": dbutils.widgets.get("pg_token"),
+    "sslmode": "require",
 }
 
 # COMMAND ----------
