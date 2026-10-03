@@ -3,7 +3,6 @@
 # MAGIC # Ingesta a Bronze
 # MAGIC Lectura de los CSV con el esquema declarado en el contrato.
 
-
 # COMMAND ----------
 
 %load_ext autoreload
@@ -22,21 +21,19 @@ contrato = cargar_contrato("../conf/data_contracts.yaml")
 
 # COMMAND ----------
 
-from src.ingestion.contracts import cargar_contrato, esquema_de
+# MAGIC %md
+# MAGIC ## Exploración: esquema y lectura de bureau
 
-contrato = cargar_contrato("../conf/data_contracts.yaml")
+# COMMAND ----------
+
 esquema = esquema_de(contrato, "bureau")
 
 for campo in esquema.fields:
     print(f"{campo.name:25s} {campo.dataType.simpleString():8s} nulable={campo.nullable}")
-# COMMAND ----------
+
 # COMMAND ----------
 
-from src.ingestion.readers import leer_csv
-
-RUTA = "/Volumes/riesgo/bronze/home_credit_raw"
 archivo = contrato["tablas"]["bureau"]["archivo"]
-
 df = leer_csv(spark, f"{RUTA}/{archivo}", esquema)
 
 print("Filas:", df.count())
@@ -44,9 +41,6 @@ print("Filas con datos rescatados:", df.filter("_rescued_data IS NOT NULL").coun
 display(df.limit(5))
 
 # COMMAND ----------
-
-import uuid
-from src.ingestion.metadata import agregar_metadatos, agregar_row_hash
 
 tabla = "installments_payments"
 archivo = contrato["tablas"][tabla]["archivo"]
@@ -63,15 +57,16 @@ display(df.limit(3))
 
 # COMMAND ----------
 
-from src.ingestion.contracts import validar_estructura
+# MAGIC %md
+# MAGIC ## Validación de estructura
+
+# COMMAND ----------
 
 for tabla, info in contrato["tablas"].items():
     validar_estructura(spark, f"{RUTA}/{info['archivo']}", contrato, tabla)
     print(f"✓ {tabla}")
 
 # COMMAND ----------
-
-from src.ingestion.contracts import ContratoRoto
 
 PRUEBAS = f"{RUTA}/_pruebas"
 dbutils.fs.mkdirs(PRUEBAS)
@@ -96,24 +91,40 @@ for nombre, pdf in casos.items():
 
 # COMMAND ----------
 
-from src.ingestion.writers import escribir_bronze
+# MAGIC %md
+# MAGIC ## Carga a Bronze (llave natural + _row_hash)
 
-for intento in [1, 2]:
-    print(f"--- Carga {intento} ---")
-    for tabla, info in contrato["tablas"].items():
-        ruta = f"{RUTA}/{info['archivo']}"
-        destino = f"riesgo.bronze.{tabla}"
+# COMMAND ----------
 
-        validar_estructura(spark, ruta, contrato, tabla)
-        df = leer_csv(spark, ruta, esquema_de(contrato, tabla))
+# Ejecutar UNA sola vez: borra las tablas para reconstruirlas con _row_hash
+for tabla in contrato["tablas"]:
+    spark.sql(f"DROP TABLE IF EXISTS riesgo.bronze.{tabla}")
 
-        if info["llave"] == ["_row_hash"]:
-            columnas = [c["nombre"] for c in info["columnas"]]
-            df = agregar_row_hash(df, columnas)
+# COMMAND ----------
 
-        df = agregar_metadatos(df, info["archivo"], batch_id=str(uuid.uuid4()))
-        modo = escribir_bronze(spark, df, destino, info["llave"])
-        print(f"{tabla:25s} {modo:8s} {spark.table(destino).count():>12,} filas")
+for tabla, info in contrato["tablas"].items():
+    ruta = f"{RUTA}/{info['archivo']}"
+    destino = f"riesgo.bronze.{tabla}"
+
+    validar_estructura(spark, ruta, contrato, tabla)
+    df = leer_csv(spark, ruta, esquema_de(contrato, tabla))
+
+    columnas = [c["nombre"] for c in info["columnas"]]
+    df = agregar_row_hash(df, columnas)
+
+    if "_row_hash" in info["llave"]:
+        llave_bronze = info["llave"]
+    else:
+        llave_bronze = info["llave"] + ["_row_hash"]
+
+    df = agregar_metadatos(df, info["archivo"], batch_id=str(uuid.uuid4()))
+    modo = escribir_bronze(spark, df, destino, llave_bronze)
+    print(f"{tabla:25s} {modo:8s} {str(llave_bronze):45s} {spark.table(destino).count():>12,} filas")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Verificación
 
 # COMMAND ----------
 
