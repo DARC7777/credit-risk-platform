@@ -1,12 +1,16 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # MAGIC %md
 # MAGIC # Lakebase por JDBC
 # MAGIC Postgres simula el sistema transaccional del banco; Spark extrae con el conector nativo de Postgres.
 
 # COMMAND ----------
 
-%load_ext autoreload
-%autoreload 2
+# MAGIC %load_ext autoreload
+# MAGIC %autoreload 2
 
 # COMMAND ----------
 
@@ -25,10 +29,13 @@ opciones_pg = {
     "port": "5432",
     "database": "databricks_postgres",
     "user": "daki.dev27@gmail.com",
-    "password": dbutils.widgets.get("pg_token"),
+    "password": dbutils.secrets.get("lakebase", "pg_token"),
 }
 
+print("Largo del token:", len(opciones_pg["password"]))
+
 # COMMAND ----------
+
 
 df = leer_csv(spark, f"{RUTA}/application_test.csv", esquema_de(contrato, "application_test"))
 
@@ -85,3 +92,6 @@ df_pg = agregar_metadatos(df_pg, archivo="public.solicitudes",
 destino = "riesgo.bronze.solicitudes_core"
 modo = escribir_bronze(spark, df_pg, destino, ["SK_ID_CURR"])
 print(f"{destino}: {modo} → {spark.table(destino).count():,} filas")
+
+# COMMAND ----------
+
