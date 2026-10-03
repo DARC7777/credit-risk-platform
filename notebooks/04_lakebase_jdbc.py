@@ -1,7 +1,7 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # Lakebase por JDBC
-# MAGIC Postgres simula el sistema transaccional del banco; Spark extrae por JDBC.
+# MAGIC Postgres simula el sistema transaccional del banco; Spark extrae con el conector nativo de Postgres.
 
 # COMMAND ----------
 
@@ -20,14 +20,12 @@ from src.ingestion.readers import leer_csv
 RUTA = "/Volumes/riesgo/bronze/home_credit_raw"
 contrato = cargar_contrato("../conf/data_contracts.yaml")
 
-PG_HOST = "ep-steep-paper-d8xhu2of.database.us-east-2.cloud.databricks.com"
-PG_DB = "databricks_postgres"
-JDBC_URL = f"jdbc:postgresql://{PG_HOST}:5432/{PG_DB}?sslmode=require"
-
-props = {
+opciones_pg = {
+    "host": "ep-broad-river-d80j4ljq.database.us-east-2.cloud.databricks.com",
+    "port": "5432",
+    "database": "databricks_postgres",
     "user": "daki.dev27@gmail.com",
     "password": dbutils.widgets.get("pg_token"),
-    "driver": "org.postgresql.Driver",
 }
 
 # COMMAND ----------
@@ -35,38 +33,43 @@ props = {
 df = leer_csv(spark, f"{RUTA}/application_test.csv", esquema_de(contrato, "application_test"))
 
 (df.drop("_rescued_data")
-   .write.jdbc(JDBC_URL, "public.solicitudes", mode="overwrite", properties=props))
+   .write.format("postgresql")
+   .options(**opciones_pg)
+   .option("dbtable", "public.solicitudes")
+   .mode("overwrite")
+   .save())
 
-n = spark.read.jdbc(JDBC_URL, "(SELECT COUNT(*) AS n FROM public.solicitudes) t",
-                    properties=props).first()["n"]
+n = (spark.read.format("postgresql")
+     .options(**opciones_pg)
+     .option("query", "SELECT COUNT(*) AS n FROM public.solicitudes")
+     .load()
+     .first()["n"])
 print(f"Filas en Postgres: {n:,}")
 
 # COMMAND ----------
 
-limites = spark.read.jdbc(
-    JDBC_URL,
-    '(SELECT MIN("SK_ID_CURR") AS minimo, MAX("SK_ID_CURR") AS maximo FROM public.solicitudes) t',
-    properties=props,
-).first()
+limites = (spark.read.format("postgresql")
+           .options(**opciones_pg)
+           .option("query", 'SELECT MIN("SK_ID_CURR") AS minimo, MAX("SK_ID_CURR") AS maximo FROM public.solicitudes')
+           .load()
+           .first())
 
 print(f"SK_ID_CURR va de {limites['minimo']:,} a {limites['maximo']:,}")
 
-
 # COMMAND ----------
 
-df_pg = spark.read.jdbc(
-    url=JDBC_URL,
-    table="public.solicitudes",
-    column='"SK_ID_CURR"',
-    lowerBound=limites["minimo"],
-    upperBound=limites["maximo"],
-    numPartitions=4,
-    properties=props,
-)
-
 from pyspark.sql import functions as F
-print(f"Pedazos: {df_pg.select(F.spark_partition_id()).distinct().count()}")
 
+df_pg = (spark.read.format("postgresql")
+         .options(**opciones_pg)
+         .option("dbtable", "public.solicitudes")
+         .option("partitionColumn", '"SK_ID_CURR"')
+         .option("lowerBound", limites["minimo"])
+         .option("upperBound", limites["maximo"])
+         .option("numPartitions", 4)
+         .load())
+
+print(f"Pedazos: {df_pg.select(F.spark_partition_id()).distinct().count()}")
 print(f"Filas leídas: {df_pg.count():,}")
 
 # COMMAND ----------
