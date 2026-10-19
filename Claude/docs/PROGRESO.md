@@ -2,13 +2,13 @@
 
 ## Estado actual
 - **Fase:** cierre de F1
-- **Siguiente paso:** verificar la recarga de Bronze con la llave nueva
-- **Bloqueos:** ninguno
-- **Plan:** F0–F15 · núcleo Data Engineer: F0–F2d, F4, F4c, F11–F13 · opcionales: F5, F8
+- **Siguiente paso:** crear el secreto `pg_user` en Databricks y después hacer la segunda carga (`modo=merge` + `DESCRIBE HISTORY`) de las 8 tablas y de `solicitudes_core`
+- **Bloqueos:** el notebook 04 no corre hasta que exista el secreto `lakebase/pg_user`
+- **Plan:** F0–F15 · núcleo Data Engineer: F0–F2d, F4, F4c, F11–F13 · núcleo MLOps: F4, F7, F11, F12, F13 · opcionales: F5, F8
 - **Certificaciones objetivo:**
   1. Databricks Certified Data Engineer **Associate** (temario vigente desde 2026-05-04)
   2. Databricks Certified Data Engineer **Professional** (temario nuevo, vigente desde 2026-10-09)
-- **Última actualización:** 2026-10-05
+- **Última actualización:** 2026-10-18
 
 > Leyenda: [x] hecho con evidencia · [~] hecho sin verificar · [ ] pendiente
 > `A§n` = sección del examen Associate · `P§n` = sección del examen Professional (temario nuevo)
@@ -29,17 +29,25 @@
 - [x] Lector CSV con esquema declarado (`src/ingestion/readers.py`) y ADR-004
 - [x] Metadatos de ingesta y `_row_hash` (`src/ingestion/metadata.py`)
 - [x] Validación de estructura: detecta columna faltante, sobrante y orden cambiado
-- [x] Escritura idempotente con MERGE: doble carga sin duplicar y prueba negativa con `append`
-- [~] Cambio de llave Bronze a llave natural + `_row_hash` (código listo, recarga sin verificar)
+- [x] Escritura idempotente con MERGE: doble carga sin duplicar y prueba negativa con `append` (con la llave natural sola; evidencia en ADR-005, recuperada en `0c65e02`)
+- [x] Cambio de llave Bronze a llave natural + `_row_hash`: recarga de las 8 tablas del 2026-10-05, todas ✓ (salida en ADR-005; código en `notebooks/02_ingesta_bronze.py`)
 - [x] Autoloader con cargas mensuales simuladas (`notebooks/03_autoloader.py`) `A§2`
-- [x] Extracción desde Lakebase por JDBC (`notebooks/04_lakebase_jdbc.py`) `A§2`
+- [x] Extracción desde Lakebase con el conector `postgresql` (`notebooks/04_lakebase_jdbc.py`) `A§2`
+- [x] `solicitudes_core` reconstruida con `_row_hash`, 2026-10-05: filas=48,744 · llaves=48,744 · lotes=1 · `_row_hash`=sí ✓
+- [x] ADR-005 reconstruido: cuerpo original, nota bajo "Por qué solo insertar", estado actualizado y la actualización de `_row_hash` al final (`0c65e02`)
+- [x] ADR-006 con "Alternativas consideradas", "Evidencia" y pendientes resueltos (`0c65e02`)
+- [x] Notebook 04 sin credenciales en el código: host en `conf/config.yaml`, usuario y token del secret scope; sin widget, `sslmode`, print del token ni `DROP TABLE` (`f3110c8`)
+- [x] `writers.py` con la sangría corregida (`1c9e9a0`)
+- [x] Notebooks 02 y 03 compilan: magics de autoreload como `# MAGIC` (`5b2a249`)
+- [x] Notebook 00 sin celda duplicada; notebook 01 con `orderBy` antes de `limit(1)` (`83b5e0c`)
 
 **Compuerta:** las tablas en Bronze · esquema alterado aborta sin escribir · el mismo lote dos veces no duplica
 
 **Pendientes de cierre:**
-- [ ] Pegar la salida del bucle de recarga y de la verificación
-- [ ] Actualizar ADR-005 con la llave natural + `_row_hash`
-- [ ] Terminar ADR-006: conector nativo, secret scope, token truncado a 2048 caracteres
+- [ ] Crear el secreto `pg_user` en el secret scope `lakebase` (Databricks)
+- [ ] Idempotencia de las 8 tablas con la llave nueva: segunda carga con `modo=merge` y `DESCRIBE HISTORY` con una versión MERGE (la recarga del 2026-10-05 fue una primera carga, después de `DROP TABLE`)
+- [ ] Idempotencia de `solicitudes_core`: segunda carga con `modo=merge` y `DESCRIBE HISTORY` con una versión MERGE
+- [ ] Pegar ambas salidas en ADR-005 y ADR-006 (sección Evidencia)
 - [ ] Borrar el proyecto de Lakebase que no se usa
 - [ ] Commit final de F1
 
@@ -127,6 +135,7 @@ Nota: el bus de mensajes real (Kinesis) se practica en el proyecto 02 de AWS; aq
 - [ ] Objetos Gold: vista, vista materializada, streaming table y tabla, con ADR de cuándo usar cada uno según latencia, costo y refresco `A§3` `P§1`
 - [ ] Modelo dimensional con una metric view de Unity Catalog para la tasa de incumplimiento y la pérdida esperada `P§9`
 - [ ] Registro en Feature Store con descripción por feature
+- [ ] Feature lookup con corrección temporal (point-in-time) usando llaves de tiempo en Feature Engineering de Unity Catalog
 - [ ] Tests unitarios por familia de features
 - [ ] Agregar la capa Gold como tarea del job de F2b
 
@@ -172,6 +181,8 @@ Nota: la plataforma de features completa vive en el proyecto de GCP.
 - [ ] Siete compuertas en `promotion_gates.py`
 - [ ] Aliases champion y challenger
 - [ ] Modelo de respaldo entrenado y registrado
+- [ ] Modelos registrados en Unity Catalog, con linaje modelo → tablas de entrenamiento
+- [ ] Firma del modelo y ejemplo de entrada registrados en MLflow
 
 ## F8 · Cosechas y SQL analítico — PLANEADA (opcional)
 - [ ] Curvas de mora por cosecha y maduración
@@ -199,6 +210,9 @@ Nota: la plataforma de features completa vive en el proyecto de GCP.
 - [ ] Las ocho fallas de la taxonomía
 - [ ] Degradación al modelo de respaldo
 - [ ] Simulacro de rollback documentado con evidencia (alias y `RESTORE TABLE`)
+- [ ] Endpoint de Model Serving para inferencia en tiempo real, si Free Edition lo permite; si no, ADR con el diseño
+- [ ] Despliegue en modo sombra: el challenger puntúa en paralelo sin decidir, y se comparan sus resultados con el champion
+- [ ] Tabla de inferencias: cada predicción guardada con entrada, salida, versión del modelo y timestamp
 
 ## F12 · Monitoreo, drift y alertas — PLANEADA
 - [ ] Tablas `ml.monitoring` y `ml.alertas`
@@ -210,6 +224,8 @@ Nota: la plataforma de features completa vive en el proyecto de GCP.
 - [ ] Alerta de Databricks sobre la tasa de cuarentena y sobre una métrica de negocio `P§4`
 - [ ] Monitoreo de jobs y pipelines con REST API, CLI y SDK `P§4`
 - [ ] Salud de los jobs: estados, bloqueos aguas arriba en el DAG, tiempos y tasa de fallo `A§6` `P§4`
+- [ ] Monitoreo nativo de Databricks sobre la tabla de inferencias, comparado contra el PSI propio en un ADR
+- [ ] Reentrenamiento automático: si el drift supera el umbral, un job reentrena y el modelo nuevo solo se promueve si pasa las compuertas de F7
 - [ ] `docs/monitoring.md` y `docs/runbook.md`
 
 ## F13 · FinOps, cómputo y optimización — PLANEADA
@@ -222,6 +238,7 @@ Nota: la plataforma de features completa vive en el proyecto de GCP.
 - [ ] Compactación y tamaño balanceado de archivos `P§9`
 - [ ] Runbook de fallas de cómputo: arranque, conflicto de librerías y memoria insuficiente `A§6` `P§8`
 - [ ] ADR de dimensionamiento del cluster para un entorno pago
+- [ ] Costo por predicción, en batch y en tiempo real
 
 ## F14 · Copiloto del analista — PLANEADA
 - [ ] Tres herramientas: SQL de solo lectura con lista blanca, explicación de una decisión, consulta del runbook
@@ -268,7 +285,27 @@ Con F1b, F2, F2b, F2c, F4 y F4c cerradas queda cubierto cerca del 90%.
 
 El Professional exige además F2d, F12 y F13: no se cubre sin la parte de operación.
 
-**A verificar en Free Edition:** conectores de Lakeflow Connect (en especial CDC de Postgres) · tablas externas y external locations · Iceberg gestionado · federación hacia Lakebase · Delta Sharing y Clean Rooms · system tables disponibles · `ai_query` · metric views · parámetros de Spark en serverless · métricas visibles (Spark UI o query profile) · grupos y segundo usuario para probar permisos.
+## Cobertura — MLOps
+| Competencia | Dónde se cubre | Estado |
+|---|---|---|
+| Calidad de datos | F1, F2 | Parcial |
+| Reproducibilidad | F0, F7 | Parcial |
+| Feature store | F4 | Pendiente |
+| Tracking y registro | F7 | Pendiente |
+| Compuertas de promoción | F7 | Pendiente |
+| Orquestación | F2b, F11, F12 | Pendiente |
+| CI/CD | F2c, F4b | Pendiente |
+| Inferencia batch | F11 | Pendiente |
+| Inferencia en tiempo real | F11 | Pendiente |
+| Despliegue gradual | F7, F11 | Pendiente |
+| Monitoreo y drift | F9, F12 | Pendiente |
+| Reentrenamiento automático | F12 | Pendiente |
+| Costos | F13 | Pendiente |
+| LLMOps | F14 | Pendiente |
+
+Contenedores (Docker, Kubernetes) e infraestructura como código (Terraform) quedan fuera de este proyecto: se practican en los proyectos de AWS y GCP.
+
+**A verificar en Free Edition:** conectores de Lakeflow Connect (en especial CDC de Postgres) · tablas externas y external locations · Iceberg gestionado · federación hacia Lakebase · Delta Sharing y Clean Rooms · system tables disponibles · `ai_query` · metric views · parámetros de Spark en serverless · métricas visibles (Spark UI o query profile) · grupos y segundo usuario para probar permisos · Model Serving · monitoreo nativo de tablas e inferencias.
 
 Lo que Free Edition no permita se estudia en teoría y queda documentado en el ADR correspondiente.
 
@@ -278,22 +315,41 @@ Lo que Free Edition no permita se estudia en teoría y queda documentado en el A
 | Fecha | Decisión | Dónde quedó |
 |---|---|---|
 | 2026-09 | Esquema declarado, nunca inferido | ADR-004 |
-| 2026-10-03 | Llave de Bronze = llave natural + `_row_hash`, para guardar correcciones como versiones | ADR-005 (por actualizar) |
-| 2026-10-03 | `installments_payments` usa `_row_hash` como llave: tiene pagos parciales, no duplicados | Contrato de datos |
-| 2026-10-03 | Token de Lakebase en secret scope, no en widget | ADR-006 (por terminar) |
+| 2026-10-03 | Llave de Bronze = llave natural + `_row_hash`, para guardar correcciones como versiones | ADR-005, sección "Actualización 2026-10-03" (falta línea de estado) |
+| 2026-10-03 | `installments_payments` usa `_row_hash` como llave: tiene pagos parciales, no duplicados | Contrato de datos y ADR-005 |
+| 2026-10-03 | Token de Lakebase en secret scope, no en widget | ADR-006, "Credenciales en un secret scope" (el notebook 04 todavía tiene el widget) |
 | 2026-10-05 | El plan se alinea con los temarios Associate y Professional: se agregan F1b, F2b, F2c, F2d y F4c | Este archivo |
+| 2026-10-17 | El plan se amplía para vacantes de MLOps: ítems nuevos en F4, F7, F11, F12 y F13, y tabla de cobertura MLOps | Este archivo |
 
 ## Preguntas abiertas
 - `DAYS_EMPLOYED = 365243`: ¿dato corrupto o centinela? ¿Qué pasa con el interruptor del 5% si va a cuarentena? (F2)
 - Bronze guarda versiones de cada registro, pero la purga exige borrar a un cliente por completo: ¿cómo conviven? (F4c)
+- Orden del plan: ¿mantener el bloque de Data Engineer primero (F1b–F4c) o adelantar un camino corto de ML (F6 mínimo → F7 → F11 → F12) después de F2? Decide Daniel.
 
 ## Repaso pendiente
-- Pregunta 2: qué recuerda Autoloader y qué recuerda MERGE
+- Pregunta 2: qué recuerda Autoloader y qué recuerda MERGE. La respuesta está en la tabla "Autoloader: un segundo mecanismo" del ADR-005, recuperada en `0c65e02`. Falta explicarla con mis palabras.
 - Explicar con mis palabras: `info["llave"] + ["_row_hash"]`
+
+## Deuda técnica
+- `get_run_fingerprint` (`src/utils/reproducibility.py`) solo usa la versión de Spark y los nombres de las tablas; no guarda commit, versión Delta ni semilla como pide ADR-003. Lo escribe Daniel como ejercicio.
+- `src/ingestion/writers.py` no tiene ningún test: el error de sangría de `649665b` pasó con pytest en verde.
 
 ---
 
 ## Bitácora
+### 2026-10-18
+- Correcciones de F1 hechas por Claude con permiso puntual de Daniel: `writers.py` (`1c9e9a0`), magics de 02 y 03 (`5b2a249`), notebook 04 sin credenciales (`f3110c8`), notebooks 00 y 01 (`83b5e0c`), espacios en `src/` (`796c7e7`), ADR-005 y ADR-006 (`0c65e02`), CLAUDE.md y `.gitignore` (`cbbcbf8`).
+- Se quitan del código las 60 preguntas de estudio; las respuestas viven en `docs/notas_aprendizaje.md`, que queda fuera del repo.
+- Decisiones de Daniel: el host de Lakebase va en `conf/config.yaml`, y las notas de aprendizaje no se versionan.
+- Verificación: `py_compile` sin errores en `src/` y `notebooks/`, y pytest 3/3. En el código no hay correo, host ni tokens; el host solo aparece en `conf/config.yaml`. El correo y el host siguen en el historial de git (`76cdbaa`, `5895af5`).
+
+### 2026-10-17
+- Validación de F1 contra el repo. Commits desde el 2026-10-05: `e91a9bc` (2026-10-05, notebook 04, ADR-005 y este archivo) y `649665b` (2026-10-07, `writers.py`).
+- Con salidas pegadas: recarga de las 8 tablas con llave natural + `_row_hash` ✓ y `solicitudes_core` reconstruida con `_row_hash` ✓. El código de los notebooks 02 y 04 coincide con esas salidas.
+- Sigue pendiente la idempotencia con la llave nueva: las dos cargas fueron primeras cargas, después de `DROP TABLE`.
+- Hallazgos: `649665b` dejó `writers.py` sin poder importarse (corrección sin commit) · `e91a9bc` borró el cuerpo original del ADR-005 · ADR-006 no tiene "Alternativas consideradas" ni "Evidencia" · el notebook 04 contradice al ADR-006 (widget, `sslmode`).
+- Se amplía el plan para MLOps: ítems en F4, F7, F11, F12 y F13, sección "Cobertura — MLOps", dos verificaciones en Free Edition y la pregunta abierta sobre el orden del plan.
+
 ### 2026-10-05
 - Se agregan fases y tareas para cubrir los temarios Associate y Professional de Databricks.
 - Se reordena el archivo: todas las fases antes de Decisiones y Bitácora.
