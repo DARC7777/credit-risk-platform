@@ -14,26 +14,21 @@
 
 # COMMAND ----------
 
-dbutils.widgets.text("pg_token", "", "Token OAuth de Lakebase")
-
-# COMMAND ----------
-
 from src.ingestion.contracts import cargar_contrato, esquema_de
 from src.ingestion.readers import leer_csv
+from src.utils.reproducibility import load_config
 
 RUTA = "/Volumes/riesgo/bronze/home_credit_raw"
 contrato = cargar_contrato("../conf/data_contracts.yaml")
+cfg = load_config()
 
 opciones_pg = {
-    "host": "ep-broad-river-d80j4ljq.database.us-east-2.cloud.databricks.com",
+    "host": cfg["lakebase"]["host"],
     "port": "5432",
     "database": "databricks_postgres",
-    "user": "daki.dev27@gmail.com",
-    "password": dbutils.widgets.get("pg_token") or dbutils.secrets.get("lakebase", "pg_token"),
-    "sslmode": "require",
+    "user": dbutils.secrets.get("lakebase", "pg_user"),
+    "password": dbutils.secrets.get("lakebase", "pg_token"),
 }
-
-print("Largo del token:", len(opciones_pg["password"]))
 
 # COMMAND ----------
 
@@ -95,11 +90,6 @@ print(f"Filas leídas: {df_pg.count():,}")
 
 # MAGIC %md
 # MAGIC ## Carga a Bronze (llave natural + _row_hash)
-
-# COMMAND ----------
-
-# Ejecutar UNA sola vez: la tabla anterior no tiene _row_hash
-spark.sql("DROP TABLE IF EXISTS riesgo.bronze.solicitudes_core")
 
 # COMMAND ----------
 

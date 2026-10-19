@@ -9,6 +9,9 @@ catalog:
 paths:
   raw_volume: /Volumes/riesgo/bronze/home_credit_raw
 
+lakebase:
+  host: ep-broad-river-d80j4ljq.database.us-east-2.cloud.databricks.com
+
 sampling:
   enabled: true
   fraction: 0.1
