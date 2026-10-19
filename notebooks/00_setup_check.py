@@ -20,16 +20,6 @@ fallas = []
 
 # COMMAND ----------
 
-import sys
-sys.path.append("/Workspace/Repos")  # ajustar según dónde quede el Git folder
-
-from src.utils.reproducibility import load_config, set_seeds
-
-cfg = load_config()
-fallas = []
-
-# COMMAND ----------
-
 # MAGIC %md ## 1. Catálogo
 # MAGIC
 # MAGIC
@@ -38,6 +28,7 @@ fallas = []
 
 catalogo = cfg["catalog"]["name"]
 existe = spark.sql(f"SHOW CATALOGS LIKE '{catalogo}'").count() > 0
+
 
 print(f"{'OK  ' if existe else 'FAIL'} | catálogo {catalogo}")
 if not existe:

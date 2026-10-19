@@ -10,7 +10,7 @@
 
 # COMMAND ----------
 
-RUTA = "/Volumes/riesgo/bronze/home_credit_raw"
+RUTA = "/Volumes/riesgo/bronze/home_credit_raw" 
 
 archivos = [f for f in dbutils.fs.ls(RUTA) if f.name.endswith(".csv")]
 for f in archivos:
@@ -25,7 +25,7 @@ for f in archivos:
           .option("inferSchema", "true")
           .option("samplingRatio", 0.1)
           .csv(f.path))
-    resumen.append((f.name, df.count(), len(df.columns)))
+    resumen.append((f.name, df.count(), len(df.columns))) 
 
 display(spark.createDataFrame(resumen, ["archivo", "filas", "columnas"]).sort("archivo"))
 
@@ -88,7 +88,7 @@ llave = ["SK_ID_PREV", "NUM_INSTALMENT_VERSION", "NUM_INSTALMENT_NUMBER"]
 repetidas = inst.groupBy(*llave).count().filter("count > 1")
 print("Combinaciones repetidas:", repetidas.count())
 
-ejemplo = repetidas.limit(1)
+ejemplo = repetidas.orderBy(*llave).limit(1)
 display(inst.join(ejemplo, llave).orderBy("DAYS_ENTRY_PAYMENT"))
 
 es_llave("installments_payments", llave + ["DAYS_ENTRY_PAYMENT"])
