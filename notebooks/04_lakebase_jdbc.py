@@ -128,3 +128,8 @@ ok = filas == 48_744 and llaves == filas and lotes == 1 and tiene_hash
 
 print(f"filas={filas:,}  llaves={llaves:,}  lotes={lotes}  "
       f"_row_hash={'sí' if tiene_hash else 'no'}  {'✓' if ok else '✗'}")
+
+# COMMAND ----------
+
+display(spark.sql("DESCRIBE HISTORY riesgo.bronze.solicitudes_core")
+             .select("version", "timestamp", "operation", "operationMetrics"))

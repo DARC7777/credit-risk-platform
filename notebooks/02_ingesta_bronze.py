@@ -96,12 +96,6 @@ for nombre, pdf in casos.items():
 
 # COMMAND ----------
 
-# Ejecutar UNA sola vez: borra las tablas para reconstruirlas con _row_hash
-for tabla in contrato["tablas"]:
-    spark.sql(f"DROP TABLE IF EXISTS riesgo.bronze.{tabla}")
-
-# COMMAND ----------
-
 for tabla, info in contrato["tablas"].items():
     ruta = f"{RUTA}/{info['archivo']}"
     destino = f"riesgo.bronze.{tabla}"
@@ -143,18 +137,5 @@ for tabla, info in contrato["tablas"].items():
 
 # COMMAND ----------
 
-tabla = "bureau"
-info = contrato["tablas"][tabla]
-prueba = "riesgo.bronze._prueba_append"
-
-spark.sql(f"DROP TABLE IF EXISTS {prueba}")
-for intento in [1, 2]:
-    df = leer_csv(spark, f"{RUTA}/{info['archivo']}", esquema_de(contrato, tabla))
-    df = agregar_metadatos(df, info["archivo"], batch_id=str(uuid.uuid4()))
-    df.write.format("delta").mode("append").saveAsTable(prueba)
-
-t = spark.table(prueba)
-print(f"filas={t.count():,}  llaves={t.select(*info['llave']).distinct().count():,}  "
-      f"lotes={t.select('_batch_id').distinct().count()}")
-
-spark.sql(f"DROP TABLE {prueba}")
+display(spark.sql("DESCRIBE HISTORY riesgo.bronze.bureau")
+             .select("version", "timestamp", "operation", "operationMetrics"))
