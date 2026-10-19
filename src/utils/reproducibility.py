@@ -53,4 +53,4 @@ def get_run_fingerprint(spark, tables):
     fingerprint_hash = hashlib.md5(fingerprint_str.encode()).hexdigest()
     
     return fingerprint_hash
-    
+

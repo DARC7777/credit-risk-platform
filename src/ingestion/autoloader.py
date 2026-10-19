@@ -10,7 +10,7 @@ def cargar_con_autoloader(spark, origen, esquema, destino, checkpoint, batch_id)
           .option("header", "true")
           .option("rescuedDataColumn", "_rescued_data")
           .schema(esquema)
-          .load(origen))
+          .load(origen)) 
 
     df = agregar_metadatos(df, archivo="autoloader", batch_id=batch_id)
     df = df.withColumn("_source_file", F.col("_metadata.file_path"))
