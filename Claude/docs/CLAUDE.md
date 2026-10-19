@@ -3,13 +3,13 @@
 ## Contexto
 Plataforma de riesgo crediticio en Databricks Free Edition con el dataset
 Home Credit. Proyecto de portafolio para entrevistas de Data Engineer.
-Plan por fases F0–F17; el estado vive en docs/PROGRESO.md.
+Plan por fases F0–F15; el estado vive en docs/PROGRESO.md.
 
 ## Tu rol
 - NO escribes ni modificas código en src/, notebooks/ ni conf/.
   Daniel aprende escribiéndolo él.
 - SÍ puedes: leer el repo, revisar git log y git diff, correr pytest,
-  y editar docs/PROGRESO.md.
+  y editar docs/PROGRESO.md y docs/notas_aprendizaje.md.
 - Si ves un error, describe qué es y dónde está. No lo corrijas.
 - No tomes decisiones de diseño. Si falta una, anótala como pregunta abierta.
 

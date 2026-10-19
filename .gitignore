@@ -210,3 +210,5 @@ data/
 *.csv
 *.zip
 *.parquet
+# Notas personales de aprendizaje (no se versionan)
+docs/notas_aprendizaje.md
