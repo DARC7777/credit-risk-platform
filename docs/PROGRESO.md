@@ -2,7 +2,7 @@
 
 ## Estado actual
 - **Fase:** cierre de F1
-- **Siguiente paso:** crear el secreto `pg_user` en Databricks y después hacer la segunda carga (`modo=merge` + `DESCRIBE HISTORY`) de las 8 tablas y de `solicitudes_core`
+- **Siguiente paso:** probar la idempotencia con la llave nueva en Databricks (segunda carga de 04 y 02 con `modo=merge` y `DESCRIBE HISTORY`)
 - **Bloqueos:** el notebook 04 no corre hasta que exista el secreto `lakebase/pg_user`
 - **Plan:** F0–F15 · núcleo Data Engineer: F0–F2d, F4, F4c, F11–F13 · núcleo MLOps: F4, F7, F11, F12, F13 · opcionales: F5, F8
 - **Certificaciones objetivo:**
@@ -40,14 +40,16 @@
 - [x] `writers.py` con la sangría corregida (`1c9e9a0`)
 - [x] Notebooks 02 y 03 compilan: magics de autoreload como `# MAGIC` (`5b2a249`)
 - [x] Notebook 00 sin celda duplicada; notebook 01 con `orderBy` antes de `limit(1)` (`83b5e0c`)
+- [x] Notebook 02 sin `DROP TABLE` ni prueba con `append`; 02 y 04 con celda de `DESCRIBE HISTORY` después de la verificación (`e2c3409`)
+- [x] `CLAUDE.md` en la raíz y `PROGRESO.md` en `docs/` (`81a5d3f`)
 
 **Compuerta:** las tablas en Bronze · esquema alterado aborta sin escribir · el mismo lote dos veces no duplica
 
-**Pendientes de cierre:**
-- [ ] Crear el secreto `pg_user` en el secret scope `lakebase` (Databricks)
-- [ ] Idempotencia de las 8 tablas con la llave nueva: segunda carga con `modo=merge` y `DESCRIBE HISTORY` con una versión MERGE (la recarga del 2026-10-05 fue una primera carga, después de `DROP TABLE`)
-- [ ] Idempotencia de `solicitudes_core`: segunda carga con `modo=merge` y `DESCRIBE HISTORY` con una versión MERGE
-- [ ] Pegar ambas salidas en ADR-005 y ADR-006 (sección Evidencia)
+**Pendientes de cierre (Daniel, en este orden):**
+- [ ] Push de los commits locales a GitHub
+- [ ] Secretos `pg_user` y `pg_token` en el secret scope `lakebase` (token renovado: vence cada hora)
+- [ ] Pull del Git folder en Databricks
+- [ ] Correr 04 y 02 por segunda vez: deben imprimir `merge`, mantener los conteos y mostrar una versión MERGE sin filas insertadas en `DESCRIBE HISTORY`; pegar las salidas para ADR-005 y ADR-006 (sección Evidencia)
 - [ ] Borrar el proyecto de Lakebase que no se usa
 - [ ] Commit final de F1
 
@@ -337,6 +339,12 @@ Lo que Free Edition no permita se estudia en teoría y queda documentado en el A
 ---
 
 ## Bitácora
+### 2026-10-18 (segunda parte)
+- `CLAUDE.md` pasa a la raíz y `PROGRESO.md` a `docs/`; se elimina la carpeta `Claude/` (`81a5d3f`). Ningún archivo usaba la ruta vieja.
+- Notebook 02: se quitan la celda de `DROP TABLE` y la prueba con `append`. Notebooks 02 y 04: celda de `DESCRIBE HISTORY` para la prueba de idempotencia (`e2c3409`).
+- Verificación: `py_compile` sin errores en todos los `.py` y pytest 3/3.
+- Los pendientes de F1 quedan en orden y son todos de Daniel: push, secretos, pull, segunda carga, borrar el proyecto de Lakebase y commit final.
+
 ### 2026-10-18
 - Correcciones de F1 hechas por Claude con permiso puntual de Daniel: `writers.py` (`1c9e9a0`), magics de 02 y 03 (`5b2a249`), notebook 04 sin credenciales (`f3110c8`), notebooks 00 y 01 (`83b5e0c`), espacios en `src/` (`796c7e7`), ADR-005 y ADR-006 (`0c65e02`), CLAUDE.md y `.gitignore` (`cbbcbf8`).
 - Se quitan del código las 60 preguntas de estudio; las respuestas viven en `docs/notas_aprendizaje.md`, que queda fuera del repo.
