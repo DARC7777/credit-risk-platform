@@ -1,269 +1,433 @@
 # Progreso — credit-risk-platform
 
 ## Estado actual
-- **Fase:** cierre de F1
-- **Siguiente paso:** probar la idempotencia con la llave nueva en Databricks (segunda carga de 04 y 02 con `modo=merge` y `DESCRIBE HISTORY`)
-- **Bloqueos:** el notebook 04 no corre hasta que exista el secreto `lakebase/pg_user`
+- **Fase:** F0, sin iniciar
+- **Siguiente paso:** primer paso de "Entender" en F0
+- **Bloqueos:** ninguno
 - **Plan:** F0–F15 · núcleo Data Engineer: F0–F2d, F4, F4c, F11–F13 · núcleo MLOps: F4, F7, F11, F12, F13 · opcionales: F5, F8
 - **Certificaciones objetivo:**
   1. Databricks Certified Data Engineer **Associate** (temario vigente desde 2026-05-04)
   2. Databricks Certified Data Engineer **Professional** (temario nuevo, vigente desde 2026-10-09)
-- **Última actualización:** 2026-10-18
+- **Última actualización:** 2026-11-16
 
 > Leyenda: [x] hecho con evidencia · [~] hecho sin verificar · [ ] pendiente
 > `A§n` = sección del examen Associate · `P§n` = sección del examen Professional (temario nuevo)
 
+**Cómo leer cada fase**
+- **Pregunta:** el problema de ingeniería que la fase resuelve.
+- **Entender:** explorar, listar alternativas y dejar por escrito la decisión con su porqué. Va antes de construir.
+- **Construir:** pasos de 20 a 60 minutos. Dicen qué lograr o decidir, no cómo.
+- **Compuerta:** lo que se tiene que poder verificar para dar la fase por cerrada.
+
 ---
 
-## F0 · Fundación y reproducibilidad — CERRADA
-- [x] Catálogo `riesgo` con esquemas bronze, silver, gold, ml, ai
-- [x] Volume `riesgo.bronze.home_credit_raw` con los CSV de Home Credit
-- [x] Entorno con uv y `pyproject.toml` con lockfile
-- [x] `load_config` y `set_seeds`, con 3 tests de pytest pasando
-- [x] `notebooks/00_setup_check.py`
-- [x] ADR-001 (dataset y Spark), ADR-002 (capas), ADR-003 (reproducibilidad)
-- [x] `docs/business_problem.md`
+## F0 · Fundación y reproducibilidad
+**Pregunta:** ¿Qué necesito tener en pie, y cómo lo organizo, para que cualquier resultado del proyecto se pueda reproducir y explicar?
 
-## F1 · Ingesta y contratos — EN CIERRE
-- [x] `conf/data_contracts.yaml` con las 8 tablas: tipos, nulabilidad y llave verificada
-- [x] Lector CSV con esquema declarado (`src/ingestion/readers.py`) y ADR-004
-- [x] Metadatos de ingesta y `_row_hash` (`src/ingestion/metadata.py`)
-- [x] Validación de estructura: detecta columna faltante, sobrante y orden cambiado
-- [x] Escritura idempotente con MERGE: doble carga sin duplicar y prueba negativa con `append` (con la llave natural sola; evidencia en ADR-005, recuperada en `0c65e02`)
-- [x] Cambio de llave Bronze a llave natural + `_row_hash`: recarga de las 8 tablas del 2026-10-05, todas ✓ (salida en ADR-005; código en `notebooks/02_ingesta_bronze.py`)
-- [x] Autoloader con cargas mensuales simuladas (`notebooks/03_autoloader.py`) `A§2`
-- [x] Extracción desde Lakebase con el conector `postgresql` (`notebooks/04_lakebase_jdbc.py`) `A§2`
-- [x] `solicitudes_core` reconstruida con `_row_hash`, 2026-10-05: filas=48,744 · llaves=48,744 · lotes=1 · `_row_hash`=sí ✓
-- [x] ADR-005 reconstruido: cuerpo original, nota bajo "Por qué solo insertar", estado actualizado y la actualización de `_row_hash` al final (`0c65e02`)
-- [x] ADR-006 con "Alternativas consideradas", "Evidencia" y pendientes resueltos (`0c65e02`)
-- [x] Notebook 04 sin credenciales en el código: host en `conf/config.yaml`, usuario y token del secret scope; sin widget, `sslmode`, print del token ni `DROP TABLE` (`f3110c8`)
-- [x] `writers.py` con la sangría corregida (`1c9e9a0`)
-- [x] Notebooks 02 y 03 compilan: magics de autoreload como `# MAGIC` (`5b2a249`)
-- [x] Notebook 00 sin celda duplicada; notebook 01 con `orderBy` antes de `limit(1)` (`83b5e0c`)
-- [x] Notebook 02 sin `DROP TABLE` ni prueba con `append`; 02 y 04 con celda de `DESCRIBE HISTORY` después de la verificación (`e2c3409`)
-- [x] `CLAUDE.md` en la raíz y `PROGRESO.md` en `docs/` (`81a5d3f`)
+Entender
+- [ ] Lee la descripción del dataset Home Credit: qué representa cada tabla y cómo se relacionan. Dibuja el diagrama de relaciones
+- [ ] Escribe en una página el problema de negocio: quién decide, qué decide y cuánto cuesta equivocarse en cada dirección
+- [ ] Lista formas de organizar los datos por capas y objetos en la plataforma, y escribe tu decisión con el porqué `A§1`
 
-**Compuerta:** las tablas en Bronze · esquema alterado aborta sin escribir · el mismo lote dos veces no duplica
+Construir
+- [ ] Decide dónde aterrizan los archivos crudos y quién puede verlos; sube los CSV ahí `A§1`
+- [ ] Crea en el workspace la estructura de datos que decidiste `A§1`
+- [ ] Decide cómo separar en el repo la lógica reutilizable de la orquestación, y anota el porqué
+- [ ] Decide cómo fijar las dependencias para que el entorno se reconstruya igual en otra máquina
+- [ ] Define qué significa "reproducible" en este proyecto: qué tiene que quedar registrado de cada corrida
+- [ ] Construye la lógica que registra esa huella, con una prueba que demuestre que funciona
+- [ ] Prepara un chequeo inicial que confirme, dentro de Databricks, que el entorno y los datos están donde deben
 
-**Pendientes de cierre (Daniel, en este orden):**
-- [ ] Push de los commits locales a GitHub
-- [ ] Secretos `pg_user` y `pg_token` en el secret scope `lakebase` (token renovado: vence cada hora)
-- [ ] Pull del Git folder en Databricks
-- [ ] Correr 04 y 02 por segunda vez: deben imprimir `merge`, mantener los conteos y mostrar una versión MERGE sin filas insertadas en `DESCRIBE HISTORY`; pegar las salidas para ADR-005 y ADR-006 (sección Evidencia)
-- [ ] Borrar el proyecto de Lakebase que no se usa
-- [ ] Commit final de F1
+**Compuerta:** en un clon limpio el entorno se reconstruye y las pruebas pasan · el chequeo inicial corre en Databricks y lista las 8 tablas fuente con su conteo · dos corridas con la misma entrada dejan la misma huella
 
-## F1b · Ingesta ampliada — PLANEADA
-- [ ] `COPY INTO` incremental desde el volume hacia una tabla de Unity Catalog `A§2`
-- [ ] Autoloader con evolución de esquema: archivo con una columna nueva, `schemaEvolutionMode` y columna de datos rescatados `A§2`
-- [ ] JSON anidado: `bureau` con su `bureau_balance` como arreglo, ingerido con Autoloader y aplanado con `explode` `A§2` `A§3`
-- [ ] El mismo JSON guardado como `VARIANT` con `parse_json` y consultado con `variant_get`; comparar contra el esquema fijo `P§3`
-- [ ] Otros formatos: una tabla en Parquet, una tabla Iceberg gestionada y archivos binarios con `binaryFile` `P§2`
-- [ ] Lakebase como catálogo federado (Lakehouse Federation) con permisos de UC y credenciales de conexión; ADR frente al JDBC de F1 `P§2`
-- [ ] Lakeflow Connect: CDC desde Postgres (Lakebase) si Free Edition lo permite; si no, estudio teórico `A§2` `P§2`
-- [ ] ADR-007: cuándo Autoloader, `COPY INTO`, Lakeflow Connect, federación o JDBC, según volumen, frecuencia, tipo de dato y gobierno `A§2`
+## F1 · Ingesta Bronze
+**Pregunta:** ¿Cómo garantizo que los datos aterricen completos, con el tipo correcto y sin duplicarse aunque la carga se repita?
 
-**Compuerta:** la columna nueva evoluciona el esquema sin perder filas · `COPY INTO` dos veces no duplica · el JSON aterriza como struct y como `VARIANT`
+Entender
+- [ ] Explora cada archivo fuente: columnas, tipos aparentes, nulos y tamaño. Anota lo que te sorprenda
+- [ ] Decide qué identifica de forma única una fila en cada tabla y anota la evidencia
+- [ ] Lista las formas de obtener el esquema de un archivo, con los riesgos de cada una, y escribe tu decisión `A§2`
 
-## F2 · Silver y calidad como compuerta — NO INICIADA
-- [ ] Motor de reglas declarativas en YAML (`conf/quality_rules.yaml`, `src/quality/`) `A§3`
-- [ ] Tabla `riesgo.silver.cuarentena` con motivo de rechazo por registro
-- [ ] Interruptor de circuito al 5%
-- [ ] Centinelas documentados (`DAYS_EMPLOYED = 365243`) y política de nulos por columna `A§3`
-- [ ] Versión vigente: Silver toma la versión más reciente por llave natural (ventana con `row_number` frente a `dropDuplicates`) `A§3`
-- [ ] Las mismas reglas como expectations en un Lakeflow Declarative Pipeline (`expect`, `expect_or_drop`, `expect_or_fail`), con ADR que compara contra el motor propio `A§3` `P§3`
-- [ ] AUTO CDC desde las versiones de Bronze: SCD tipo 1 (versión vigente) y tipo 2 (historia de correcciones) con `stored_as_scd_type` `P§1` `P§2`
-- [ ] Pipeline en modo streaming desde Autoloader; ADR de Structured Streaming frente a Declarative Pipelines `P§1`
-- [ ] Tests del motor con `assertDataFrameEqual`, `assertSchemaEqual` y funciones encadenadas con `DataFrame.transform` `P§1`
-- [ ] `CHECK` constraints en Delta y `docs/data_dictionary.md`
-- [ ] Descripciones del diccionario publicadas como comentarios y tags en Unity Catalog `P§7`
+Construir
+- [ ] Escribe el contrato de cada tabla: columnas, tipos, nulabilidad y llave
+- [ ] Lee una tabla fuente aplicando su contrato y verifica que los tipos resultantes coinciden `A§2`
+- [ ] Decide qué pasa cuando un archivo no respeta el contrato (columna faltante, sobrante u orden distinto) y logra que la carga se detenga antes de escribir
+- [ ] Decide qué metadatos de ingesta acompañan cada fila y para qué sirve cada uno
+- [ ] Decide qué pasa si llega una fila con la misma llave y contenido distinto: ¿reemplaza, se ignora o se guarda como versión? Escribe el porqué
+- [ ] Logra que cargar el mismo lote dos veces deje la tabla igual. Demuéstralo con conteos y con el historial de la tabla `A§2`
+- [ ] Prueba negativa: muestra qué le pasa a la tabla con una escritura ingenua repetida
+- [ ] Lista formas de procesar solo los archivos nuevos cuando llegan cargas periódicas, y escribe tu decisión `A§2`
+- [ ] Simula cargas mensuales y procesa solo lo nuevo `A§2`
+- [ ] Decide cómo extraer datos de una base operacional (Lakebase) y cómo manejar sus credenciales sin dejarlas en el código `A§2`
+- [ ] Extrae una tabla desde Lakebase hacia Bronze con la misma garantía de no duplicar `A§2`
+- [ ] Escribe pruebas de la lógica de ingesta que corran fuera de Databricks
 
-**Compuerta:** 10% de corruptos aborta sin escribir · 2% continúa y deja rastro en cuarentena · una corrección en Bronze aparece como nueva versión en el SCD2
+**Compuerta:** las 8 tablas en Bronze con el mismo conteo que su archivo · un archivo con el esquema alterado aborta sin escribir nada · la segunda carga del mismo lote no cambia conteos ni agrega filas (salida pegada) · no hay credenciales en el repo
 
-## F2b · Orquestación con Lakeflow Jobs — PLANEADA
-- [ ] Job con DAG: ingesta Bronze → Silver, con dependencias entre tareas `A§4`
-- [ ] Tarea for-each sobre las 8 tablas del contrato `A§4` `P§1`
-- [ ] Reintentos configurados y rama condicional (if/else) cuando abre el interruptor `A§4` `P§1`
-- [ ] Tipos de tarea: notebook, consulta SQL y pipeline declarativo `A§4`
-- [ ] Triggers: programado, llegada de archivo al volume y actualización de tabla, con ADR de cuándo usar cada uno `A§4`
-- [ ] El mismo job creado por UI, por CLI y por REST API `P§1`
-- [ ] Fallo inducido reparado con job repair y parámetros sobrescritos `P§8`
-- [ ] Notificaciones por estado del job `P§4`
-- [ ] Lectura del historial de runs: tiempos frente a la línea base y tasa de fallo `A§6` `P§4`
+## F1b · Ingesta ampliada
+**Pregunta:** ¿Cómo elijo el mecanismo de ingesta correcto cuando cambian el formato, el volumen, la frecuencia o el esquema de la fuente?
 
-**Compuerta:** borrar Silver y el job la reconstruye · un fallo inducido reintenta, toma la rama de fallo y se repara sin re-correr lo que ya pasó
+Entender
+- [ ] Lista los mecanismos de ingesta que ofrece Databricks y compáralos: si son incrementales, quién guarda el estado, qué fuentes aceptan y cuánto cuestan `A§2` `P§2`
+- [ ] Explora qué cambia cuando el dato llega anidado o semiestructurado en vez de tabular `A§2` `P§3`
 
-## F2c · CI/CD con Declarative Automation Bundles — PLANEADA
-- [ ] `src/` empaquetado como wheel y estructura del proyecto pensada para el bundle `P§1`
-- [ ] `databricks.yml` con targets dev y prod, variables y overrides por target (catálogo o esquema) `A§5` `P§8`
-- [ ] Job y pipeline de F2/F2b definidos en el bundle `A§5`
-- [ ] `databricks bundle validate`, `deploy -t <target>` y `run` desde la CLI `A§5` `P§8`
-- [ ] Dependencias en entornos serverless, pipeline y bundle; documentar un conflicto de librería y su solución `P§1`
-- [ ] Flujo en Git folder del workspace: rama, commit, push y pull request desde la UI `A§5` `P§8`
-- [ ] GitHub Actions que corre pytest y `bundle validate` en cada pull request `A§5` `P§8`
+Construir
+- [ ] Haz una carga incremental desde el volume con un mecanismo distinto al de F1, y demuestra que repetirla no duplica `A§2`
+- [ ] Decide qué hacer cuando la fuente agrega una columna nueva. Pruébalo con un archivo que la traiga, sin perder filas ni valores inesperados `A§2`
+- [ ] Construye una versión anidada de `bureau` con su historial mensual, haz que aterrice y llévala después a forma tabular `A§2` `A§3`
+- [ ] Guarda el mismo dato anidado sin un esquema fijo y consúltalo. Compara ventajas y costos frente al esquema fijo `P§3`
+- [ ] Carga una tabla en otros formatos abiertos y también archivos binarios. Anota qué gana y qué pierde cada uno `P§2`
+- [ ] Consulta Lakebase sin copiar los datos y con permisos gobernados. Compáralo con la extracción de F1 `P§2`
+- [ ] Investiga cómo capturar continuamente los cambios de una base Postgres. Impleméntalo si Free Edition lo permite; si no, documenta el diseño `A§2` `P§2`
+- [ ] Escribe tu guía de decisión: qué mecanismo usar según volumen, frecuencia, tipo de dato y gobierno `A§2`
 
-**Compuerta:** el mismo código se despliega a dev y prod con un comando y configuración distinta · un PR muestra CI verde
+**Compuerta:** la columna nueva aparece sin perder filas · la carga incremental repetida no duplica · el dato anidado da los mismos totales en forma tabular y sin esquema fijo · la guía cubre todos los mecanismos probados
 
-## F2d · Structured Streaming con estado — PLANEADA
-- [ ] Simular `installments_payments` como flujo de eventos con un timestamp de evento derivado
-- [ ] Agregación por ventana de tiempo con watermark para acotar el estado `P§1`
-- [ ] Modos de salida (append, update, complete) probados y documentados `P§1`
-- [ ] `foreachBatch` con MERGE idempotente hacia Delta `P§1`
-- [ ] Caída provocada a mitad del flujo y recuperación desde el checkpoint sin contar doble `P§1`
-- [ ] Pipeline append-only que recibe batch y streaming sobre la misma tabla Delta `P§2`
+## F2 · Silver y calidad como compuerta
+**Pregunta:** ¿Cómo decido qué dato es confiable para consumir, qué hago con el que no lo es y cuándo detengo todo?
 
-**Compuerta:** tras matar el stream y reiniciarlo, los totales coinciden con un cálculo batch sobre los mismos datos
+Entender
+- [ ] Perfila Bronze buscando problemas de calidad (nulos, valores imposibles, valores centinela, rangos) y anota la evidencia `A§3`
+- [ ] Lista alternativas para tratar filas inválidas (descartar, apartar, corregir o detener) y escribe tu decisión con el porqué
 
-Nota: el bus de mensajes real (Kinesis) se practica en el proyecto 02 de AWS; aquí se estudia Kafka en teoría `P§2`.
+Construir
+- [ ] Decide si las reglas de calidad viven dentro o fuera del código que las aplica, y escríbelas `A§3`
+- [ ] Logra que cada fila rechazada quede guardada con el motivo de su rechazo
+- [ ] Decide qué proporción de rechazos detiene la carga y por qué ese número. Logra que se detenga sin escribir
+- [ ] Decide la política de nulos por columna y documenta los valores centinela, como el de `DAYS_EMPLOYED` `A§3`
+- [ ] Si Bronze guarda varias versiones de un registro, logra que Silver muestre solo la vigente. Compara dos formas de lograrlo y explica en qué difieren `A§3`
+- [ ] Implementa las mismas reglas con el mecanismo declarativo de calidad de la plataforma y compáralo con el tuyo `A§3` `P§3`
+- [ ] Conserva la historia de correcciones de cada registro además de su versión vigente `P§1` `P§2`
+- [ ] Haz que el mismo flujo procese datos que llegan de forma continua, y escribe cuándo conviene cada enfoque `P§1`
+- [ ] Prueba la lógica de calidad comparando datos y esquemas contra lo esperado, con transformaciones que se puedan encadenar `P§1`
+- [ ] Haz que la tabla rechace datos inválidos aunque alguien escriba por fuera del flujo
+- [ ] Escribe el diccionario de datos de Silver y publícalo donde lo vean los usuarios del catálogo `P§7`
 
-## F3 · EDA y protocolo de evaluación — PLANEADA
-- [ ] Tasa de incumplimiento global y por segmento; IV y WoE por variable
-- [ ] Perfilado con `summary()` y `approx_count_distinct` frente a `countDistinct`, con su diferencia de costo `A§3`
-- [ ] Lista escrita de variables descartadas por fuga
-- [ ] Definición de la partición out-of-time
-- [ ] Golden set de 500 casos congelado y versionado
-- [ ] `docs/evaluation_protocol.md` con umbrales numéricos fijados antes de modelar
+**Compuerta:** 10% de corruptos aborta sin escribir · 2% continúa y deja rastro con motivo · una corrección en Bronze aparece como versión nueva en la historia y actualiza la vigente
 
-## F4 · Gold, features y Feature Store — PLANEADA
-- [ ] Agregaciones con ventanas de 3, 6, 12 y 24 meses sobre las seis tablas satélite `A§3` `P§3`
-- [ ] Funciones de ventana para rachas de mora y deterioro `P§3`
-- [ ] Joins: left, inner, por llaves múltiples y `union` frente a `unionByName` `A§3`
-- [ ] UDFs: una pandas UDF, una Python UDF y una función SQL registrada en Unity Catalog, con su costo comparado `P§1`
-- [ ] `ai_query` para normalizar `ORGANIZATION_TYPE` en sectores, si Free Edition lo permite `P§3`
-- [ ] Change Data Feed en Silver; Gold se actualiza leyendo solo los cambios `P§5`
-- [ ] `broadcast` justificado por asimetría de tamaños, medido antes y después `A§3`
-- [ ] Experimento de skew: AQE con skew join frente a salting, leído en el query profile `A§3` `A§6` `P§5`
-- [ ] Parámetros de tuning (`spark.sql.shuffle.partitions`, `autoBroadcastJoinThreshold`) medidos; documentar cuáles permite serverless `A§3`
-- [ ] Objetos Gold: vista, vista materializada, streaming table y tabla, con ADR de cuándo usar cada uno según latencia, costo y refresco `A§3` `P§1`
-- [ ] Modelo dimensional con una metric view de Unity Catalog para la tasa de incumplimiento y la pérdida esperada `P§9`
-- [ ] Registro en Feature Store con descripción por feature
-- [ ] Feature lookup con corrección temporal (point-in-time) usando llaves de tiempo en Feature Engineering de Unity Catalog
-- [ ] Tests unitarios por familia de features
-- [ ] Agregar la capa Gold como tarea del job de F2b
+## F2b · Orquestación
+**Pregunta:** ¿Cómo hago que el flujo corra solo, en orden, se recupere de las fallas y me avise, sin que yo intervenga?
 
-**Compuerta:** el golden set reproduce los valores esperados · Gold se reconstruye en una corrida
+Entender
+- [ ] Dibuja el grafo de dependencias de tu flujo: qué depende de qué y qué puede correr en paralelo `A§4`
+- [ ] Lista formas de disparar un flujo (horario, llegada de datos, cambio en una tabla) y decide cuál corresponde a cada parte `A§4`
 
-## F4b · Test de fuga temporal — PLANEADA (acotada)
-- [ ] Test automatizado de fuga temporal en CI que bloquea el merge
+Construir
+- [ ] Crea un job con el grafo Bronze → Silver y sus dependencias `A§4`
+- [ ] Logra que una misma tarea se repita para las 8 tablas sin copiarla 8 veces `A§4` `P§1`
+- [ ] Decide qué tareas merecen reintentos y cuántos, y configúralos `A§4`
+- [ ] Logra que el job tome otro camino cuando se abre la compuerta de calidad `A§4` `P§1`
+- [ ] Usa al menos tres tipos de tarea distintos y anota cuándo conviene cada uno `A§4`
+- [ ] Configura los disparadores que decidiste `A§4`
+- [ ] Crea el mismo job por tres vías (interfaz, línea de comandos y API) y compáralas `P§1`
+- [ ] Provoca una falla y recupera el job cambiando parámetros, sin repetir lo que ya pasó `P§8`
+- [ ] Decide quién se entera de cada estado del job y configúralo `P§4`
+- [ ] Lee el historial de corridas: duración frente a la línea base y tasa de fallo `A§6` `P§4`
+
+**Compuerta:** si borras Silver, el job la reconstruye · una falla inducida reintenta, toma la rama de fallo y se repara sin re-correr lo que ya pasó
+
+## F2c · CI/CD
+**Pregunta:** ¿Cómo llevo el mismo código de desarrollo a producción de forma repetible, revisada y sin pasos manuales?
+
+Entender
+- [ ] Lista qué cambia entre dev y prod en este proyecto (catálogo, esquema, permisos, horarios) y qué no debe cambiar `A§5` `P§8`
+- [ ] Compara formas de empaquetar y desplegar código y jobs en Databricks, y escribe tu decisión `A§5`
+
+Construir
+- [ ] Empaqueta la lógica para que se instale como dependencia y no como archivos sueltos `P§1`
+- [ ] Define los entornos dev y prod, con sus diferencias como configuración `A§5` `P§8`
+- [ ] Describe como código versionado el job y el pipeline de F2 y F2b `A§5`
+- [ ] Valida, despliega y ejecuta en cada entorno desde la línea de comandos `A§5` `P§8`
+- [ ] Gestiona las dependencias en cada tipo de cómputo. Provoca un conflicto de librerías, documéntalo y resuélvelo `P§1`
+- [ ] Haz el ciclo rama → commit → push → pull request desde el workspace `A§5` `P§8`
+- [ ] Logra que cada pull request corra las pruebas y la validación de forma automática `A§5` `P§8`
+
+**Compuerta:** el mismo código se despliega a dev y a prod con un comando y configuración distinta · un pull request muestra CI verde
+
+## F2d · Streaming con estado
+**Pregunta:** ¿Cómo proceso eventos que llegan sin parar, con un estado acotado, y obtengo el mismo resultado que un batch aunque el proceso se caiga?
+
+Entender
+- [ ] Explica con tus palabras la diferencia entre tiempo de evento y tiempo de proceso, y qué pasa con los eventos que llegan tarde `P§1`
+- [ ] Lista las formas de emitir resultados de una agregación continua y cuándo sirve cada una `P§1`
+
+Construir
+- [ ] Simula `installments_payments` como un flujo de eventos con un tiempo de evento creíble
+- [ ] Agrega por ventanas de tiempo. Decide cuánto retraso toleras y por qué, y logra que el estado no crezca sin límite `P§1`
+- [ ] Prueba cada forma de emitir resultados y documenta lo que observes `P§1`
+- [ ] Escribe el resultado del flujo en una tabla sin duplicar aunque un micro-lote se reprocese `P§1`
+- [ ] Detén el flujo a la mitad, reinícialo y verifica que no cuenta doble `P§1`
+- [ ] Logra que una misma tabla reciba datos en batch y en continuo sin romperse `P§2`
+- [ ] Estudia en teoría un bus de mensajes y cómo cambiaría el diseño `P§2`
+
+**Compuerta:** después de detener y reiniciar el flujo, los totales coinciden con un cálculo batch sobre los mismos datos
+
+Nota: el bus de mensajes real (Kinesis) se practica en el proyecto 02 de AWS.
+
+## F3 · EDA y protocolo de evaluación
+**Pregunta:** ¿Qué dicen los datos sobre el incumplimiento y cómo fijo, antes de modelar, la forma de saber si un modelo es bueno?
+
+Entender
+- [ ] Calcula la tasa de incumplimiento global y por segmento, y anota lo que te sorprenda
+- [ ] Compara métodos exactos y aproximados para perfilar columnas y mide la diferencia de costo `A§3`
+
+Construir
+- [ ] Mide el poder predictivo de cada variable con una métrica que puedas explicarle a negocio
+- [ ] Identifica las variables que no estarían disponibles al momento de decidir y descártalas por escrito
+- [ ] Decide cómo partir los datos en el tiempo para que la evaluación imite el uso real
+- [ ] Congela y versiona un conjunto de 500 casos de referencia
+- [ ] Escribe el protocolo de evaluación con umbrales numéricos, antes de entrenar cualquier modelo
+
+**Compuerta:** el protocolo tiene un commit anterior al del primer modelo · los casos de referencia están versionados y se reproducen igual
+
+## F4 · Gold, features y Feature Store
+**Pregunta:** ¿Cómo convierto el historial de cada cliente en variables confiables, sin mirar al futuro y a un costo que pueda justificar?
+
+Entender
+- [ ] Explora las seis tablas satélite y decide qué comportamientos del cliente vale la pena resumir, y en qué horizontes de tiempo
+- [ ] Lista los tipos de objeto que puedes publicar en Gold y decide cuál usar en cada caso según latencia, costo y refresco `A§3` `P§1`
+
+Construir
+- [ ] Construye agregaciones por horizonte de tiempo `A§3` `P§3`
+- [ ] Mide rachas de mora y deterioro a lo largo del tiempo `P§3`
+- [ ] Une las tablas a nivel de cliente. Decide el tipo de unión para cada una y verifica que no multiplicas filas `A§3`
+- [ ] Implementa la misma transformación personalizada de tres formas distintas y compara su costo `P§1`
+- [ ] Normaliza `ORGANIZATION_TYPE` en sectores con un modelo de lenguaje, si Free Edition lo permite `P§3`
+- [ ] Logra que Gold se actualice leyendo solo lo que cambió en Silver `P§5`
+- [ ] Optimiza una unión entre una tabla grande y una pequeña, y mide antes y después `A§3`
+- [ ] Provoca una unión desbalanceada, léela en el perfil de la consulta y compara dos remedios `A§3` `A§6` `P§5`
+- [ ] Mide el efecto de los parámetros de afinación y documenta cuáles permite serverless `A§3`
+- [ ] Define la tasa de incumplimiento y la pérdida esperada como métricas reutilizables, con una sola definición `P§9`
+- [ ] Publica las features con su descripción y logra que cada consulta respete el momento de cada observación
+- [ ] Escribe pruebas por familia de features
+- [ ] Agrega Gold como tarea del job de F2b
+
+**Compuerta:** los casos de referencia reproducen los valores esperados · Gold se reconstruye en una corrida
+
+## F4b · Test de fuga temporal
+**Pregunta:** ¿Cómo impido de forma automática que una feature use información del futuro?
+
+Entender
+- [ ] Escribe tres ejemplos concretos de fuga que podrían ocurrir en este dataset
+
+Construir
+- [ ] Escribe una prueba que falle ante una fuga temporal
+- [ ] Logra que esa prueba bloquee el merge en CI
+
+**Compuerta:** una feature con fuga sembrada a propósito bloquea el pull request
 
 Nota: la plataforma de features completa vive en el proyecto de GCP.
 
-## F4c · Gobierno, seguridad y compartir datos — PLANEADA
-- [ ] Tablas gestionadas frente a externas: crear, modificar, borrar y convertir; verificar qué permite Free Edition `A§7`
-- [ ] Grupo `analistas_riesgo` con `GRANT` y `REVOKE` a nivel de catálogo, esquema y tabla; demostrar la herencia de permisos `A§7` `P§7`
-- [ ] Mínimo privilegio también en objetos del workspace (notebooks, jobs, carpetas) `P§6`
-- [ ] Máscara de columna sobre `AMT_INCOME_TOTAL` según pertenencia a grupo `A§7` `P§6`
-- [ ] Filtro de filas por tipo de contrato `A§7` `P§6`
-- [ ] Política ABAC con tags gobernados para aplicar máscara y filtro de forma centralizada `A§7` `P§6`
-- [ ] Pseudonimización de `SK_ID_CURR` con hash y sal; generalización de la edad en rangos; supresión de columnas no necesarias `P§6`
-- [ ] Detección y enmascaramiento de PII en batch y en streaming `P§6`
-- [ ] Purga por derecho al olvido: borrar un cliente en Bronze, Silver y Gold, con `VACUUM` y su efecto en time travel `P§6`
-- [ ] Delta Sharing hacia un destinatario abierto (D2O); Clean Rooms en teoría si no están disponibles `P§2`
-- [ ] ADR-008: RBAC frente a ABAC, y cómo convive la purga con guardar versiones en Bronze `A§7` `P§6`
+## F4c · Gobierno, seguridad y compartir datos
+**Pregunta:** ¿Cómo garantizo que cada persona vea solo los datos que le corresponden, y que pueda borrar a un cliente por completo cuando lo exija?
 
-**Compuerta:** un usuario fuera del grupo ve la columna enmascarada y solo sus filas · el cliente purgado no aparece en ninguna capa ni en versiones anteriores tras el `VACUUM`
+Entender
+- [ ] Clasifica cada columna sensible (identificadores, ingreso, edad, etc.) y decide qué trato merece `P§6`
+- [ ] Compara el control de acceso por roles con el control por atributos, y escribe tu decisión `A§7` `P§6`
 
-## F5 · Segmentación — PLANEADA (opcional)
-- [ ] PCA y K-means con selección de k
-- [ ] Perfilamiento de segmentos en lenguaje de negocio
-- [ ] Estabilidad de los segmentos entre particiones temporales
+Construir
+- [ ] Crea, modifica, borra y convierte tablas gestionadas y externas. Verifica qué permite Free Edition `A§7`
+- [ ] Crea un grupo de analistas con permisos en cada nivel del catálogo y demuestra cómo se heredan `A§7` `P§7`
+- [ ] Aplica mínimo privilegio también a los objetos del workspace (notebooks, jobs, carpetas) `P§6`
+- [ ] Oculta el ingreso a quien no pertenezca al grupo autorizado `A§7` `P§6`
+- [ ] Limita las filas visibles según el tipo de contrato `A§7` `P§6`
+- [ ] Aplica el ocultamiento y el filtro de forma centralizada, a partir de etiquetas `A§7` `P§6`
+- [ ] Desidentifica los datos: identificador irreversible, edad en rangos y fuera las columnas innecesarias `P§6`
+- [ ] Detecta y enmascara PII en batch y en continuo `P§6`
+- [ ] Borra a un cliente de todas las capas, incluidas sus versiones anteriores `P§6`
+- [ ] Comparte una tabla con un destinatario externo. Si los entornos colaborativos no están disponibles, estúdialos en teoría `P§2`
+- [ ] Escribe cómo conviven guardar versiones en Bronze y el derecho al olvido `A§7` `P§6`
 
-## F6 · Modelos y backtesting — PLANEADA
-- [ ] Baseline de regresión logística con WoE
-- [ ] Challenger LightGBM
-- [ ] Validación out-of-time, nunca aleatoria
-- [ ] AUC, KS, Gini, precision@k y curva de calibración
-- [ ] Late submission a Kaggle, con el puntaje privado registrado en MLflow
+**Compuerta:** un usuario fuera del grupo ve la columna enmascarada y solo sus filas · el cliente purgado no aparece en ninguna capa ni en versiones anteriores
 
-**Compuerta:** todo evaluado contra el protocolo de F3, sin mover umbrales después de ver resultados
+## F5 · Segmentación (opcional)
+**Pregunta:** ¿Hay grupos de clientes con comportamiento distinto que el negocio pueda usar, y se mantienen estables en el tiempo?
 
-## F7 · MLflow, tuning y compuertas de promoción — PLANEADA
-- [ ] Tracking con versión Delta y commit por run
-- [ ] Optuna con runs anidados
-- [ ] Siete compuertas en `promotion_gates.py`
-- [ ] Aliases champion y challenger
-- [ ] Modelo de respaldo entrenado y registrado
-- [ ] Modelos registrados en Unity Catalog, con linaje modelo → tablas de entrenamiento
-- [ ] Firma del modelo y ejemplo de entrada registrados en MLflow
+Entender
+- [ ] Decide qué variables describen a un cliente para segmentarlo, y por qué
 
-## F8 · Cosechas y SQL analítico — PLANEADA (opcional)
-- [ ] Curvas de mora por cosecha y maduración
-- [ ] Análisis en SQL con window functions: `PARTITION BY`, `LAG`/`LEAD`, media móvil, `ROW_NUMBER`
-- [ ] Reporte trimestral con agregación condicional y redondeo a dos decimales
-- [ ] Ajuste por cosecha con `applyInPandas`
+Construir
+- [ ] Reduce la dimensionalidad y agrupa a los clientes, justificando el número de grupos
+- [ ] Describe cada segmento en lenguaje de negocio
+- [ ] Mide la estabilidad de los segmentos entre periodos
 
-**Compuerta:** tres cosechas proyectadas con su limitación escrita · consultas reutilizables en `sql/`
+**Compuerta:** los segmentos se mantienen entre dos particiones temporales y cada uno tiene descripción de negocio
 
-## F9 · Explicabilidad y estabilidad — PLANEADA
-- [ ] SHAP global y códigos de razón en lenguaje de negocio
-- [ ] PSI y CSI como funciones testeadas
-- [ ] Desempeño por segmento
-- [ ] `docs/model_card.md`
+## F6 · Modelos y backtesting
+**Pregunta:** ¿Supera un modelo complejo a uno simple e interpretable, medido como se usaría en producción?
 
-## F10 · Decisión de negocio y tableros — PLANEADA
-- [ ] Matriz de costos parametrizada
-- [ ] Curva de ganancia y umbral óptimo
-- [ ] Simulación de política y análisis de sensibilidad
-- [ ] Tablero en Databricks SQL sobre la metric view, como tarea de dashboard dentro del job `A§4` `P§9`
+Entender
+- [ ] Repasa el protocolo de F3 y lista qué métricas responden por discriminación, calibración y valor de negocio
+- [ ] Compara familias de modelos interpretables y complejos para este problema
 
-## F11 · Producción, degradación y rollback — PLANEADA
-- [ ] Job de scoring en Lakeflow Jobs, desplegado con el bundle `A§4` `A§5` `P§8`
-- [ ] Feature lookup y escritura idempotente del scoring
-- [ ] Las ocho fallas de la taxonomía
-- [ ] Degradación al modelo de respaldo
-- [ ] Simulacro de rollback documentado con evidencia (alias y `RESTORE TABLE`)
-- [ ] Endpoint de Model Serving para inferencia en tiempo real, si Free Edition lo permite; si no, ADR con el diseño
-- [ ] Despliegue en modo sombra: el challenger puntúa en paralelo sin decidir, y se comparan sus resultados con el champion
-- [ ] Tabla de inferencias: cada predicción guardada con entrada, salida, versión del modelo y timestamp
+Construir
+- [ ] Entrena un baseline interpretable
+- [ ] Entrena un modelo retador
+- [ ] Evalúa ambos con la partición temporal del protocolo, nunca al azar
+- [ ] Reporta las métricas y la calibración de los dos
+- [ ] Envía predicciones a la competencia de Kaggle y registra el puntaje privado
 
-## F12 · Monitoreo, drift y alertas — PLANEADA
-- [ ] Tablas `ml.monitoring` y `ml.alertas`
-- [ ] PSI, CSI y distribución de scores
-- [ ] Proxy de primera cuota
-- [ ] Inyección de drift artificial
-- [ ] System tables (billing, compute, access, lakeflow) para costo, auditoría y cargas de trabajo `P§4`
-- [ ] Event log del pipeline declarativo para salud y calidad de datos `P§4` `P§8`
-- [ ] Alerta de Databricks sobre la tasa de cuarentena y sobre una métrica de negocio `P§4`
-- [ ] Monitoreo de jobs y pipelines con REST API, CLI y SDK `P§4`
-- [ ] Salud de los jobs: estados, bloqueos aguas arriba en el DAG, tiempos y tasa de fallo `A§6` `P§4`
-- [ ] Monitoreo nativo de Databricks sobre la tabla de inferencias, comparado contra el PSI propio en un ADR
-- [ ] Reentrenamiento automático: si el drift supera el umbral, un job reentrena y el modelo nuevo solo se promueve si pasa las compuertas de F7
-- [ ] `docs/monitoring.md` y `docs/runbook.md`
+**Compuerta:** todo se evalúa contra el protocolo de F3, sin mover los umbrales después de ver resultados
 
-## F13 · FinOps, cómputo y optimización — PLANEADA
-- [ ] ADR de cómputo: serverless (entornos, dependencias, performance mode), all-purpose, job compute y SQL warehouse, con límites y modelo de costo `A§1` `P§1`
-- [ ] `docs/cost_model.md` con DBU por job, frecuencia y costo mensual proyectado, a partir de system tables `A§1` `P§4`
-- [ ] Comparativa medida: particionamiento, Z-ORDER, Liquid Clustering y `CLUSTER BY AUTO` según tamaño y patrón de consulta `A§6` `P§5` `P§9`
-- [ ] Deletion vectors en las tablas con MERGE frecuente, medido antes y después `P§5`
-- [ ] Predictive optimization y tablas gestionadas: qué mantenimiento eliminan `A§6` `P§5`
-- [ ] Caché de disco en lecturas repetidas `P§5`
-- [ ] Compactación y tamaño balanceado de archivos `P§9`
-- [ ] Runbook de fallas de cómputo: arranque, conflicto de librerías y memoria insuficiente `A§6` `P§8`
-- [ ] ADR de dimensionamiento del cluster para un entorno pago
-- [ ] Costo por predicción, en batch y en tiempo real
+## F7 · Tracking, tuning y compuertas de promoción
+**Pregunta:** ¿Cómo sé con qué datos, código y parámetros se entrenó cada modelo, y quién decide que pasa a producción?
 
-## F14 · Copiloto del analista — PLANEADA
-- [ ] Tres herramientas: SQL de solo lectura con lista blanca, explicación de una decisión, consulta del runbook
-- [ ] Golden set de 30 preguntas, con 5 de abstención obligatoria
-- [ ] Evals deterministas más juez LLM
-- [ ] Compuerta que impide promover un prompt que empeore la exactitud
-- [ ] Tracing: versión de prompt, herramienta, tokens, latencia y costo
+Entender
+- [ ] Lista qué debe registrar cada entrenamiento para poder reproducirlo
+- [ ] Escribe las condiciones que un modelo tiene que cumplir para promoverse
 
-**Compuerta:** un prompt deliberadamente malo es rechazado · un usuario sin permisos recibe abstención
+Construir
+- [ ] Registra cada corrida con la versión de los datos y del código
+- [ ] Busca hiperparámetros dejando las corridas agrupadas
+- [ ] Implementa las condiciones de promoción como código probado
+- [ ] Distingue el modelo vigente del retador sin cambiar el código que los consume
+- [ ] Entrena y registra un modelo de respaldo
+- [ ] Registra los modelos en el catálogo, con linaje hasta las tablas de entrenamiento
+- [ ] Registra la firma del modelo y un ejemplo de entrada
 
-## F15 · Documentación y narrativa — PLANEADA
-- [ ] README en inglés
-- [ ] ADRs cerrados, diccionario de datos y model card
-- [ ] `lessons_learned.md`
-- [ ] Guion de cinco minutos ensayado
+**Compuerta:** un modelo que no cumple una condición no se promueve (probado) · desde el modelo registrado se llega a sus datos y su commit
+
+## F8 · Cosechas y SQL analítico (opcional)
+**Pregunta:** ¿Cómo madura la mora de cada cohorte de créditos y qué puedo proyectar a partir de eso?
+
+Entender
+- [ ] Define qué es una cosecha en este dataset y cómo vas a medir su maduración
+
+Construir
+- [ ] Construye las curvas de mora por cosecha y maduración
+- [ ] En SQL: compara periodos contra el anterior, calcula medias móviles y ordena dentro de grupos
+- [ ] Arma un reporte trimestral con agregación condicional y redondeo a dos decimales
+- [ ] Ajusta por cosecha con lógica aplicada grupo por grupo
+
+**Compuerta:** tres cosechas proyectadas, con su limitación escrita · consultas reutilizables y versionadas
+
+## F9 · Explicabilidad y estabilidad
+**Pregunta:** ¿Puedo explicar cada decisión del modelo y detectar cuándo deja de comportarse como al entrenarlo?
+
+Entender
+- [ ] Compara formas de explicar un modelo a nivel global y a nivel de cada cliente
+- [ ] Define qué significa estabilidad de la población y de cada variable
+
+Construir
+- [ ] Explica el modelo a nivel global y da razones por cliente en lenguaje de negocio
+- [ ] Implementa las métricas de estabilidad como funciones probadas
+- [ ] Mide el desempeño por segmento
+- [ ] Escribe la ficha del modelo
+
+**Compuerta:** razones legibles para 10 casos de referencia · métricas de estabilidad con sus pruebas pasando
+
+## F10 · Decisión de negocio y tableros
+**Pregunta:** ¿Dónde pongo el umbral de aprobación para maximizar el valor, y cómo lo ve el negocio?
+
+Entender
+- [ ] Estima el costo de aprobar a quien no paga y el de rechazar a quien sí paga, y escribe tus supuestos
+
+Construir
+- [ ] Construye una matriz de costos parametrizada
+- [ ] Traza la curva de ganancia y encuentra el umbral óptimo
+- [ ] Simula la política y analiza qué tan sensible es a los supuestos
+- [ ] Publica un tablero sobre las métricas de F4 que se actualice como parte del job `A§4` `P§9`
+
+**Compuerta:** el umbral cambia cuando cambian los costos · el tablero se actualiza solo
+
+## F11 · Producción, degradación y rollback
+**Pregunta:** ¿Qué pasa cuando el scoring en producción falla, y cómo vuelvo a un estado bueno en minutos?
+
+Entender
+- [ ] Lista las formas en que puede fallar el scoring y arma una taxonomía de ocho fallas
+- [ ] Compara el scoring batch con el de tiempo real para este caso
+
+Construir
+- [ ] Crea un job de scoring desplegado con el mecanismo de F2c `A§4` `A§5` `P§8`
+- [ ] Logra que el scoring lea las features igual que en el entrenamiento y escriba sin duplicar
+- [ ] Provoca cada una de las ocho fallas y documenta qué pasa
+- [ ] Logra que el scoring pase al modelo de respaldo cuando falla el vigente
+- [ ] Haz un simulacro de rollback del modelo y de la tabla, con evidencia
+- [ ] Expón el modelo para inferencia en tiempo real si Free Edition lo permite; si no, documenta el diseño
+- [ ] Logra que el retador puntúe en paralelo sin decidir, y compara sus resultados con los del vigente
+- [ ] Guarda cada predicción con su entrada, salida, versión del modelo y momento
+
+**Compuerta:** el rollback queda documentado con evidencia y tiempo medido · cada falla de la taxonomía tiene una respuesta probada
+
+## F12 · Monitoreo, drift y alertas
+**Pregunta:** ¿Cómo me entero de que algo se degradó (datos, modelo, costo o jobs) antes de que lo note el negocio?
+
+Entender
+- [ ] Decide qué señales vigilar y qué umbral dispara cada alerta
+- [ ] Explora qué telemetría ofrece la plataforma sobre costo, auditoría, cómputo y cargas de trabajo `P§4`
+
+Construir
+- [ ] Crea las tablas donde viven el monitoreo y las alertas
+- [ ] Mide la estabilidad de las variables y la distribución de los scores
+- [ ] Define una señal temprana de mora que no espere al resultado final (por ejemplo, la primera cuota)
+- [ ] Inyecta drift artificial
+- [ ] Usa la telemetría de la plataforma para costo, auditoría y cargas de trabajo `P§4`
+- [ ] Lee la salud y la calidad del pipeline declarativo desde sus propios registros `P§4` `P§8`
+- [ ] Crea alertas sobre la tasa de cuarentena y sobre una métrica de negocio `P§4`
+- [ ] Monitorea jobs y pipelines sin la interfaz: API, línea de comandos y SDK `P§4`
+- [ ] Revisa la salud de los jobs: estados, bloqueos aguas arriba, tiempos y tasa de fallo `A§6` `P§4`
+- [ ] Compara el monitoreo nativo de la plataforma con tus métricas propias y escribe tu decisión
+- [ ] Logra que un drift por encima del umbral dispare un reentrenamiento que respete las condiciones de F7
+- [ ] Documenta el monitoreo y escribe el runbook
+
+**Compuerta:** el drift inyectado dispara la alerta y el reentrenamiento · el modelo nuevo solo se promueve si cumple las condiciones de F7
+
+## F13 · FinOps, cómputo y optimización
+**Pregunta:** ¿Cuánto cuesta cada parte de la plataforma y qué cambio la abarata sin romperla?
+
+Entender
+- [ ] Compara los tipos de cómputo disponibles (límites, dependencias, rendimiento y costo) y decide cuál usa cada carga `A§1` `P§1`
+- [ ] Mide el costo actual de cada job a partir de la telemetría `A§1` `P§4`
+
+Construir
+- [ ] Construye un modelo de costo mensual proyectado por job y frecuencia `A§1` `P§4`
+- [ ] Compara, con mediciones, estrategias de organización física de las tablas según tamaño y patrón de consulta `A§6` `P§5` `P§9`
+- [ ] Mide cómo afecta la forma de registrar borrados a las tablas con muchas actualizaciones `P§5`
+- [ ] Averigua qué mantenimiento hace la plataforma por ti y qué te ahorra `A§6` `P§5`
+- [ ] Mide el efecto de la caché en lecturas repetidas `P§5`
+- [ ] Logra archivos de tamaño balanceado y mide la diferencia `P§9`
+- [ ] Escribe un runbook para fallas de cómputo: arranque, conflicto de librerías y memoria insuficiente `A§6` `P§8`
+- [ ] Decide cómo dimensionarías el cómputo en un entorno pago, y escribe el porqué
+- [ ] Calcula el costo por predicción en batch y en tiempo real
+
+**Compuerta:** cada optimización tiene una medición de antes y después · el costo proyectado se compara con el observado
+
+## F14 · Copiloto del analista
+**Pregunta:** ¿Cómo construyo un asistente para analistas que responda bien, se abstenga cuando debe y no empeore cuando cambia el prompt?
+
+Entender
+- [ ] Decide qué preguntas debe responder el asistente y cuáles no, y qué riesgos tiene darle acceso a datos
+
+Construir
+- [ ] Construye tres herramientas: consulta de solo lectura restringida, explicación de una decisión y consulta del runbook
+- [ ] Arma un conjunto de 30 preguntas de referencia, 5 de ellas de abstención obligatoria
+- [ ] Evalúa con pruebas deterministas y con un modelo como juez
+- [ ] Logra que no se pueda promover un prompt que empeore la exactitud
+- [ ] Registra de cada respuesta: versión del prompt, herramienta, tokens, latencia y costo
+
+**Compuerta:** un prompt deliberadamente malo es rechazado · un usuario sin permisos recibe una abstención
+
+## F15 · Documentación y narrativa
+**Pregunta:** ¿Puedo contar en cinco minutos qué construí, qué decidí y por qué, de forma que lo entienda alguien que no estuvo?
+
+Entender
+- [ ] Relee tus decisiones escritas y elige las tres que mejor muestran tu criterio
+
+Construir
+- [ ] Escribe el README en inglés
+- [ ] Cierra las decisiones escritas, el diccionario de datos y la ficha del modelo
+- [ ] Escribe las lecciones aprendidas
+- [ ] Ensaya un guion de cinco minutos
+
+**Compuerta:** el guion cabe en cinco minutos y cada afirmación apunta a evidencia en el repo
 
 ---
 
 ## Cobertura — Data Engineer Associate
 | Sección | Peso | Dónde se cubre | Estado |
 |---|---|---|---|
-| A§1 Plataforma: Delta, Unity Catalog, cómputo y costos | 6% | F0, F13 | Parcial |
-| A§2 Ingesta y carga | 21% | F1, F1b | Parcial |
+| A§1 Plataforma: Delta, Unity Catalog, cómputo y costos | 6% | F0, F13 | Pendiente |
+| A§2 Ingesta y carga | 21% | F1, F1b | Pendiente |
 | A§3 Transformación y modelado | 22% | F2, F3, F4 | Pendiente |
 | A§4 Lakeflow Jobs | 16% | F2b, F10, F11 | Pendiente |
 | A§5 CI/CD | 10% | F2c, F11 | Pendiente |
@@ -290,8 +454,8 @@ El Professional exige además F2d, F12 y F13: no se cubre sin la parte de operac
 ## Cobertura — MLOps
 | Competencia | Dónde se cubre | Estado |
 |---|---|---|
-| Calidad de datos | F1, F2 | Parcial |
-| Reproducibilidad | F0, F7 | Parcial |
+| Calidad de datos | F1, F2 | Pendiente |
+| Reproducibilidad | F0, F7 | Pendiente |
 | Feature store | F4 | Pendiente |
 | Tracking y registro | F7 | Pendiente |
 | Compuertas de promoción | F7 | Pendiente |
@@ -309,66 +473,9 @@ Contenedores (Docker, Kubernetes) e infraestructura como código (Terraform) que
 
 **A verificar en Free Edition:** conectores de Lakeflow Connect (en especial CDC de Postgres) · tablas externas y external locations · Iceberg gestionado · federación hacia Lakebase · Delta Sharing y Clean Rooms · system tables disponibles · `ai_query` · metric views · parámetros de Spark en serverless · métricas visibles (Spark UI o query profile) · grupos y segundo usuario para probar permisos · Model Serving · monitoreo nativo de tablas e inferencias.
 
-Lo que Free Edition no permita se estudia en teoría y queda documentado en el ADR correspondiente.
-
----
-
-## Decisiones
-| Fecha | Decisión | Dónde quedó |
-|---|---|---|
-| 2026-09 | Esquema declarado, nunca inferido | ADR-004 |
-| 2026-10-03 | Llave de Bronze = llave natural + `_row_hash`, para guardar correcciones como versiones | ADR-005, sección "Actualización 2026-10-03" (falta línea de estado) |
-| 2026-10-03 | `installments_payments` usa `_row_hash` como llave: tiene pagos parciales, no duplicados | Contrato de datos y ADR-005 |
-| 2026-10-03 | Token de Lakebase en secret scope, no en widget | ADR-006, "Credenciales en un secret scope" (el notebook 04 todavía tiene el widget) |
-| 2026-10-05 | El plan se alinea con los temarios Associate y Professional: se agregan F1b, F2b, F2c, F2d y F4c | Este archivo |
-| 2026-10-17 | El plan se amplía para vacantes de MLOps: ítems nuevos en F4, F7, F11, F12 y F13, y tabla de cobertura MLOps | Este archivo |
-
-## Preguntas abiertas
-- `DAYS_EMPLOYED = 365243`: ¿dato corrupto o centinela? ¿Qué pasa con el interruptor del 5% si va a cuarentena? (F2)
-- Bronze guarda versiones de cada registro, pero la purga exige borrar a un cliente por completo: ¿cómo conviven? (F4c)
-- Orden del plan: ¿mantener el bloque de Data Engineer primero (F1b–F4c) o adelantar un camino corto de ML (F6 mínimo → F7 → F11 → F12) después de F2? Decide Daniel.
-
-## Repaso pendiente
-- Pregunta 2: qué recuerda Autoloader y qué recuerda MERGE. La respuesta está en la tabla "Autoloader: un segundo mecanismo" del ADR-005, recuperada en `0c65e02`. Falta explicarla con mis palabras.
-- Explicar con mis palabras: `info["llave"] + ["_row_hash"]`
-
-## Deuda técnica
-- `get_run_fingerprint` (`src/utils/reproducibility.py`) solo usa la versión de Spark y los nombres de las tablas; no guarda commit, versión Delta ni semilla como pide ADR-003. Lo escribe Daniel como ejercicio.
-- `src/ingestion/writers.py` no tiene ningún test: el error de sangría de `649665b` pasó con pytest en verde.
+Lo que Free Edition no permita se estudia en teoría y queda documentado por escrito.
 
 ---
 
 ## Bitácora
-### 2026-10-18 (segunda parte)
-- `CLAUDE.md` pasa a la raíz y `PROGRESO.md` a `docs/`; se elimina la carpeta `Claude/` (`81a5d3f`). Ningún archivo usaba la ruta vieja.
-- Notebook 02: se quitan la celda de `DROP TABLE` y la prueba con `append`. Notebooks 02 y 04: celda de `DESCRIBE HISTORY` para la prueba de idempotencia (`e2c3409`).
-- Verificación: `py_compile` sin errores en todos los `.py` y pytest 3/3.
-- Los pendientes de F1 quedan en orden y son todos de Daniel: push, secretos, pull, segunda carga, borrar el proyecto de Lakebase y commit final.
-
-### 2026-10-18
-- Correcciones de F1 hechas por Claude con permiso puntual de Daniel: `writers.py` (`1c9e9a0`), magics de 02 y 03 (`5b2a249`), notebook 04 sin credenciales (`f3110c8`), notebooks 00 y 01 (`83b5e0c`), espacios en `src/` (`796c7e7`), ADR-005 y ADR-006 (`0c65e02`), CLAUDE.md y `.gitignore` (`cbbcbf8`).
-- Se quitan del código las 60 preguntas de estudio; las respuestas viven en `docs/notas_aprendizaje.md`, que queda fuera del repo.
-- Decisiones de Daniel: el host de Lakebase va en `conf/config.yaml`, y las notas de aprendizaje no se versionan.
-- Verificación: `py_compile` sin errores en `src/` y `notebooks/`, y pytest 3/3. En el código no hay correo, host ni tokens; el host solo aparece en `conf/config.yaml`. El correo y el host siguen en el historial de git (`76cdbaa`, `5895af5`).
-
-### 2026-10-17
-- Validación de F1 contra el repo. Commits desde el 2026-10-05: `e91a9bc` (2026-10-05, notebook 04, ADR-005 y este archivo) y `649665b` (2026-10-07, `writers.py`).
-- Con salidas pegadas: recarga de las 8 tablas con llave natural + `_row_hash` ✓ y `solicitudes_core` reconstruida con `_row_hash` ✓. El código de los notebooks 02 y 04 coincide con esas salidas.
-- Sigue pendiente la idempotencia con la llave nueva: las dos cargas fueron primeras cargas, después de `DROP TABLE`.
-- Hallazgos: `649665b` dejó `writers.py` sin poder importarse (corrección sin commit) · `e91a9bc` borró el cuerpo original del ADR-005 · ADR-006 no tiene "Alternativas consideradas" ni "Evidencia" · el notebook 04 contradice al ADR-006 (widget, `sslmode`).
-- Se amplía el plan para MLOps: ítems en F4, F7, F11, F12 y F13, sección "Cobertura — MLOps", dos verificaciones en Free Edition y la pregunta abierta sobre el orden del plan.
-
-### 2026-10-05
-- Se agregan fases y tareas para cubrir los temarios Associate y Professional de Databricks.
-- Se reordena el archivo: todas las fases antes de Decisiones y Bitácora.
-
-### 2026-10-04
-- Se corrige el alcance de F2 a lo definido para este proyecto.
-- Se crean `CLAUDE.md` y este archivo para llevar el estado.
-
-### 2026-10-03
-- F1 completada en código; se decide la llave natural + `_row_hash`.
-- Desde F2, el método es esqueleto con huecos y pistas de sintaxis.
-
-### 2026-09-29
-- F0 cerrada.
+- 2026-11-16 — Reinicio desde cero. Motivo: desarrollar criterio de ingeniería de datos, no solo seguir pasos.
